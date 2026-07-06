@@ -2,10 +2,10 @@ import Link from "next/link";
 import {
   getKpis, getSeries, getRanking, getForecast, getRecommendations,
 } from "@/lib/queries";
-import { KpiCard } from "@/components/KpiCard";
+import { Figures } from "@/components/KpiCard";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { LineChart, ForecastChart, BarList } from "@/components/charts";
-import { Card, CardTitle, PageHeader } from "@/components/ui";
+import { Plate, CardTitle, PageHeader, PlateLabel } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +13,10 @@ const shortYear = (iso: string) => `'${iso.slice(2, 4)}`;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default async function ExecutivePage() {
-  const [kpis, rateByCycle, ctcByCycle, sectorCycle, tier, region, channels, ctcForecast, volForecast, recs] =
+  const [kpis, rateByCycle, sectorCycle, tier, region, channels, ctcForecast, volForecast, recs] =
     await Promise.all([
       getKpis(),
       getSeries("placement_rate_by_cycle"),
-      getSeries("median_ctc_by_cycle"),
       getSeries("median_ctc_by_sector_cycle"),
       getSeries("placement_rate_by_tier"),
       getRanking("region_placement_rate"),
@@ -28,9 +27,7 @@ export default async function ExecutivePage() {
     ]);
 
   const rateData = rateByCycle.map((p) => ({ label: p.dimension ?? "", value: p.value }));
-  const ctcData = ctcByCycle.map((p) => ({ label: p.dimension ?? "", value: p.value }));
 
-  // Sector momentum: change in median CTC from first to latest cycle.
   const bySector = new Map<string, { first: number; last: number }>();
   const cycles = [...new Set(sectorCycle.map((p) => (p.dimension ?? "|").split("|")[1]))].sort();
   const firstCycle = cycles[0], lastCycle = cycles[cycles.length - 1];
@@ -46,83 +43,78 @@ export default async function ExecutivePage() {
     .sort((a, b) => a.value - b.value);
 
   const ctcFc = ctcForecast.map((p) => ({
-    label: shortYear(p.period), value: p.yhat, lower: p.yhat_lower, upper: p.yhat_upper,
-    forecast: p.is_forecast,
+    label: shortYear(p.period), value: p.yhat, lower: p.yhat_lower, upper: p.yhat_upper, forecast: p.is_forecast,
   }));
-
   const volFc = volForecast.map((p, i) => {
     const d = new Date(p.period);
     const label = i % 4 === 0 ? `${MONTHS[d.getUTCMonth()]} '${String(d.getUTCFullYear()).slice(2)}` : "";
     return { label, value: p.yhat, lower: p.yhat_lower, upper: p.yhat_upper, forecast: p.is_forecast };
   });
 
-  const tierData = tier.map((p) => ({ label: p.dimension ?? "", value: p.value }))
-    .sort((a, b) => b.value - a.value);
+  const tierData = tier.map((p) => ({ label: p.dimension ?? "", value: p.value })).sort((a, b) => b.value - a.value);
   const regionData = region.map((r) => ({ label: r.entity, value: r.metric }));
   const channelData = channels.map((c) => ({ label: c.entity, value: c.metric }));
 
   return (
     <>
       <PageHeader
-        eyebrow="Enterprise Decision Intelligence"
-        title="Executive Overview"
-        subtitle="Placement Intelligence for the 2024-25 cycle — headline outcomes, forward projections, and the decisions they point to."
+        plate="Plate I"
+        label="Enterprise Decision Intelligence"
+        title={<>The executive <em>reading</em>.</>}
+        lede="Placement Intelligence for the 2024 to 2025 cycle. Headline outcomes, forward projections, and the decisions they point to."
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        {kpis.map((k) => <KpiCard key={k.metric_key} kpi={k} />)}
-      </div>
+      <Figures kpis={kpis} />
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardTitle title="Median CTC trajectory" hint="actuals + next-cycle projection" />
+      <PlateLabel plate="Plate II" label="Forward projections" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Plate className="p-6">
+          <CardTitle title="Median CTC trajectory" hint="actuals to next cycle" />
           <ForecastChart data={ctcFc} unit=" LPA" format={(n) => `₹${n.toFixed(0)}`} />
-        </Card>
-        <Card>
+        </Plate>
+        <Plate className="p-6">
           <CardTitle title="Placement volume outlook" hint="monthly, Holt projection" />
           <ForecastChart data={volFc} format={(n) => n.toFixed(0)} />
-        </Card>
+        </Plate>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardTitle title="Placement rate by cycle" hint="% of eligible students placed" />
+      <PlateLabel plate="Plate III" label="Where value concentrates" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Plate className="p-6">
+          <CardTitle title="Placement rate by cycle" hint="percent of eligible placed" />
           <LineChart data={rateData} unit="%" format={(n) => n.toFixed(0)} />
-        </Card>
-        <Card>
-          <CardTitle title="Sector salary momentum" hint={`median CTC change, ${firstCycle} → ${lastCycle}`} />
-          <BarList data={sectorMomentum} unit="%" format={(n) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}`}
-            accent="var(--color-accent)" />
-          <p className="mt-4 text-[12.5px] leading-relaxed text-ink-muted">
-            IT Services is the only sector with declining pay while holding the largest hiring
-            share — a structural drag on the headline median.
+        </Plate>
+        <Plate className="p-6">
+          <CardTitle title="Sector salary momentum" hint={`${firstCycle} to ${lastCycle}`} />
+          <BarList data={sectorMomentum} unit="%" format={(n) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(1)}`} />
+          <p className="mt-5 border-t border-hair-soft pt-4 text-[0.86rem] leading-relaxed text-muted">
+            IT Services is the one sector with declining pay while holding the largest hiring
+            share, a structural drag on the headline median.
           </p>
-        </Card>
+        </Plate>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <Card>
-          <CardTitle title="Placement rate by tier" />
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <Plate className="p-6">
+          <CardTitle title="By university tier" hint="placement rate" />
           <BarList data={tierData} unit="%" format={(n) => n.toFixed(1)} />
-        </Card>
-        <Card>
-          <CardTitle title="Regional performance" hint="placement rate" />
-          <BarList data={regionData} unit="%" format={(n) => n.toFixed(1)} />
-        </Card>
-        <Card>
-          <CardTitle title="Hiring channel yield" hint="placement rate" />
-          <BarList data={channelData} unit="%" format={(n) => n.toFixed(1)} />
-        </Card>
+        </Plate>
+        <Plate className="p-6">
+          <CardTitle title="By region" hint="placement rate" />
+          <BarList data={regionData} unit="%" format={(n) => n.toFixed(1)} tone="ink" />
+        </Plate>
+        <Plate className="p-6">
+          <CardTitle title="By hiring channel" hint="placement rate" />
+          <BarList data={channelData} unit="%" format={(n) => n.toFixed(1)} tone="ink" />
+        </Plate>
       </div>
 
-      <div className="mt-8 mb-4 flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Priority recommendations</h2>
-        <Link href="/recommendations" className="text-[13px] font-medium text-accent hover:underline">
-          Open Decision Center →
-        </Link>
-      </div>
-      <div className="grid gap-4">
+      <PlateLabel plate="Plate IV" label="The decisions that follow" />
+      <div className="grid gap-6">
         {recs.slice(0, 2).map((r) => <RecommendationCard key={r.recommendation_key} rec={r} />)}
+      </div>
+      <div className="mt-6">
+        <Link href="/recommendations" className="gbtn">Open the Decision Center</Link>
       </div>
     </>
   );

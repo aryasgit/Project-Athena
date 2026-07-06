@@ -1,6 +1,6 @@
 import { getRanking, getSeries, getRecommendations } from "@/lib/queries";
 import { BarList } from "@/components/charts";
-import { Card, CardTitle, PageHeader } from "@/components/ui";
+import { Plate, CardTitle, PageHeader, PlateLabel } from "@/components/ui";
 import { RecommendationCard } from "@/components/RecommendationCard";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,6 @@ export default async function SkillsPage() {
   const premiumData = premium.map((r) => ({ label: r.entity, value: r.metric }));
   const demandData = demand.map((r) => ({ label: r.entity, value: r.metric }));
 
-  // Skill demand growth: share change from first to last cycle.
   const bySkill = new Map<string, { first: number; last: number }>();
   const cycles = [...new Set(demandSeries.map((p) => (p.dimension ?? "|").split("|")[1]))].sort();
   const firstCycle = cycles[0], lastCycle = cycles[cycles.length - 1];
@@ -37,41 +36,41 @@ export default async function SkillsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Talent & Skill Analytics"
-        title="Skill Intelligence"
-        subtitle="Which skills the market pays for, which are becoming critical, and what that means for curriculum and hiring strategy."
+        plate="Plate I"
+        label="Talent and Skill Analytics"
+        title={<>What the market <em>pays for</em>.</>}
+        lede="Which skills carry a salary premium, which are becoming critical, and what that means for curriculum and hiring strategy."
       />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardTitle title="Salary premium by skill" hint="median CTC vs overall, latest cycle" />
-          <BarList data={premiumData} unit="%" format={(n) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}`} />
-          <p className="mt-4 text-[12.5px] leading-relaxed text-ink-muted">
-            System design, machine learning and deep learning carry the clearest pay premium —
-            these are the skills that move a candidate up the CTC distribution.
+      <PlateLabel plate="Plate II" label="The value of a skill" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Plate className="p-6">
+          <CardTitle title="Salary premium by skill" hint="vs overall median, latest cycle" />
+          <BarList data={premiumData} unit="%" format={(n) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(1)}`} />
+          <p className="mt-5 border-t border-hair-soft pt-4 text-[0.86rem] leading-relaxed text-muted">
+            System design, machine learning and deep learning carry the clearest premium.
+            These are the skills that move a candidate up the CTC distribution.
           </p>
-        </Card>
-        <Card>
-          <CardTitle title="Most in-demand skills" hint="% of placed students, latest cycle" />
-          <BarList data={demandData} unit="%" format={(n) => n.toFixed(1)}
-            accent="var(--color-positive)" />
-        </Card>
+        </Plate>
+        <Plate className="p-6">
+          <CardTitle title="Most in demand" hint="share of placed students" />
+          <BarList data={demandData} unit="%" format={(n) => n.toFixed(1)} tone="ink" />
+        </Plate>
       </div>
 
-      <div className="mt-4">
-        <Card>
-          <CardTitle title="Rising skill demand" hint={`share change, ${firstCycle} → ${lastCycle} (points)`} />
-          <BarList data={growth} unit=" pts" format={(n) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}`} />
-          <p className="mt-4 text-[12.5px] leading-relaxed text-ink-muted">
-            Cloud and ML-adjacent skills are appearing in a growing share of offers each cycle,
-            signalling where pre-placement training should concentrate.
-          </p>
-        </Card>
-      </div>
+      <PlateLabel plate="Plate III" label="Where demand is heading" />
+      <Plate className="p-6">
+        <CardTitle title="Rising skill demand" hint={`share change in points, ${firstCycle} to ${lastCycle}`} />
+        <BarList data={growth} unit=" pts" format={(n) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(1)}`} />
+        <p className="mt-5 border-t border-hair-soft pt-4 text-[0.86rem] leading-relaxed text-muted">
+          Cloud and machine-learning skills appear in a growing share of offers each cycle,
+          signalling where pre-placement training should concentrate.
+        </p>
+      </Plate>
 
       {skillRec && (
         <>
-          <h2 className="mt-8 mb-4 text-lg font-semibold tracking-tight">What this implies</h2>
+          <PlateLabel plate="Plate IV" label="What this implies" />
           <RecommendationCard rec={skillRec} />
         </>
       )}
