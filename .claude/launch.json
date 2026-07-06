@@ -1,0 +1,1 @@
+{ "version": "0.0.1", "configurations": [ { "name": "athena-web", "runtimeExecutable": "npm", "runtimeArgs": ["run", "start", "--prefix", "web"], "port": 3000 } ] }
