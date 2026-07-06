@@ -1,29 +1,31 @@
 import { Kpi } from "@/lib/queries";
-import { DeltaChip } from "./ui";
+import { DeltaTag } from "./ui";
 
 function formatValue(k: Kpi): string {
-  if (k.unit === "%") return k.value.toFixed(1);
+  if (k.unit === "%") return `${k.value.toFixed(1)}%`;
   if (k.unit === "LPA") return `₹${k.value.toFixed(1)}`;
   return k.value.toLocaleString("en-IN", { maximumFractionDigits: k.value % 1 === 0 ? 0 : 2 });
 }
 
-export function KpiCard({ kpi }: { kpi: Kpi }) {
+/* The KPI row set as engraved figures: Caslon numerals in hairline cells. */
+export function Figures({ kpis }: { kpis: Kpi[] }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="text-[12px] font-medium text-ink-muted">{kpi.label}</div>
-      <div className="mt-2 flex items-end gap-2">
-        <span className="text-[26px] font-semibold leading-none tracking-tight tabular text-ink">
-          {formatValue(kpi)}
-        </span>
-        {kpi.unit && kpi.unit !== "%" && (
-          <span className="mb-0.5 text-xs text-ink-faint">{kpi.unit}</span>
-        )}
-        {kpi.unit === "%" && <span className="mb-0.5 text-sm text-ink-faint">%</span>}
-      </div>
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-[11px] text-ink-faint">{kpi.context}</span>
-        <DeltaChip delta={kpi.delta} unit={kpi.unit} />
-      </div>
+    <div
+      className="figs"
+      style={{ ["--cols" as string]: Math.min(kpis.length, 5) }}
+    >
+      {kpis.map((k) => (
+        <div key={k.metric_key} className="fig">
+          <b className="text-ink">{formatValue(k)}</b>
+          <div className="lab mt-2">{k.label}</div>
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <span className="text-[0.6rem] uppercase tracking-[0.08em] text-muted">
+              {k.context}
+            </span>
+            <DeltaTag delta={k.delta} unit={k.unit} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

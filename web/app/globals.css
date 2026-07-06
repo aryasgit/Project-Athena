@@ -1,49 +1,282 @@
 @import "tailwindcss";
 
-@theme {
-  --color-canvas: #0a0e14;
-  --color-surface: #111722;
-  --color-surface-2: #161d2b;
-  --color-border: #212a3a;
-  --color-border-strong: #2c374a;
-  --color-ink: #e7edf5;
-  --color-ink-muted: #8a97ab;
-  --color-ink-faint: #5b6678;
-  --color-accent: #6d7cff;
-  --color-accent-soft: #232a52;
-  --color-positive: #35c98b;
-  --color-negative: #f2607a;
-  --color-warning: #f0b03e;
+/* ============================================================
+   THE HERITAGE SYSTEM  ·  single tone · hairlines · drawn ornament
+   Adopted from Acredemia's design law for Project Athena.
+   One paper tone per theme; hairlines carry all structure;
+   zero gradients; ornament is drawn, never filled.
+   ============================================================ */
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
+@theme {
+  --color-paper: #f6f2e9;
+  --color-ink: #16150f;
+  --color-muted: #5c5849;
+  --color-hair: #dad3c2;
+  --color-hair-soft: #e7e1d2;
+  --color-crimson: #9e1b32;
+  --color-verified: #1a7a5e;
+  --color-on-verified: #f6f2e9;
+  --color-owner: #3e5c8a;
+  --color-pending: #8c6212;
+  --color-danger: #b23a2e;
+  --color-gold: #94762f;
+
+  --font-display: "Libre Caslon Display", Georgia, serif;
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-wordmark: "EB Garamond", "Libre Caslon Display", Georgia, serif;
+}
+
+/* CRIMSON (dark) mode: the page turns deep crimson, ink flips to parchment. */
+[data-theme="dark"] {
+  --color-paper: #7e1428;
+  --color-ink: #f6f2e9;
+  --color-muted: #ebcdd3;
+  --color-hair: rgba(246, 242, 233, 0.3);
+  --color-hair-soft: rgba(246, 242, 233, 0.16);
+  --color-crimson: #f6f2e9;
+  --color-verified: #8fd9b6;
+  --color-on-verified: #4a0d18;
+  --color-owner: #a9c4e8;
+  --color-pending: #f0c25e;
+  --color-danger: #ffb29f;
+  --color-gold: #e8c877;
 }
 
 :root {
-  color-scheme: dark;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html,
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--color-canvas);
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.66;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
 }
 
-/* Numeric alignment for tables and KPIs. */
-.tabular {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
+em {
+  font-style: italic;
+  font-family: var(--font-serif);
+  color: var(--color-crimson);
+  font-weight: 500;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: var(--color-crimson);
+  color: var(--color-paper);
 }
 
-/* Thin, quiet scrollbars. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) transparent;
+  scrollbar-color: var(--color-hair) transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the drawn demarcation rule ------------------------------------- */
+.rule {
+  width: 46px;
+  height: 2px;
+  background: var(--color-crimson);
+  transform-origin: left;
+}
+
+/* --- plate eyebrow (Plate I, Plate II ...) -------------------------- */
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.eyebrow .pl {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-crimson);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.eyebrow .ln {
+  flex: 1;
+  height: 1px;
+  background: var(--color-hair);
+}
+
+/* --- plates: hairline box on the same paper, drafting corner ticks -- */
+.plate {
+  position: relative;
+  border: 1px solid var(--color-hair);
+  transition: border-color 0.25s var(--ease);
+}
+.plate:hover {
+  border-color: var(--color-ink);
+}
+.tick {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  color: var(--color-ink);
+}
+.tick svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.tick.tl {
+  top: -1px;
+  left: -1px;
+}
+.tick.br {
+  bottom: -1px;
+  right: -1px;
+  transform: rotate(180deg);
+}
+
+/* --- figures: Caslon numerals in hairline-divided cells ------------- */
+.figs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--color-hair);
+}
+@media (min-width: 768px) {
+  .figs {
+    grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+  }
+}
+.fig {
+  padding: 16px 20px;
+  border-right: 1px solid var(--color-hair);
+  border-bottom: 1px solid var(--color-hair);
+}
+.fig b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.fig .lab {
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* --- stamps: bordered caps (honest states) ------------------------- */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.stamp.green {
+  color: var(--color-on-verified);
+  background: var(--color-verified);
+  border-color: var(--color-verified);
+}
+.stamp.blue {
+  color: var(--color-owner);
+  border-color: var(--color-owner);
+}
+.stamp.amber {
+  color: var(--color-pending);
+  border-color: var(--color-pending);
+}
+.stamp.grey {
+  color: var(--color-muted);
+  border-color: var(--color-muted);
+}
+.stamp.red {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+.stamp.crimson {
+  color: var(--color-crimson);
+  border-color: var(--color-crimson);
+}
+
+/* --- ledger entries ------------------------------------------------- */
+.entry {
+  border-bottom: 1px solid var(--color-hair);
+}
+.entry:first-of-type {
+  border-top: 1px solid var(--color-hair);
+}
+.entry .name i {
+  font-style: normal;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease);
+}
+.entry:hover .name i {
+  border-color: var(--color-crimson);
+}
+
+/* --- buttons -------------------------------------------------------- */
+.gbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  border: 1px solid var(--color-hair);
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.7em 1.3em;
+  transition: border-color 0.18s var(--ease);
+}
+.gbtn:hover {
+  border-color: var(--color-ink);
+}
+
+/* --- masthead nav --------------------------------------------------- */
+.navlink {
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  padding-bottom: 3px;
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.navlink:hover {
+  color: var(--color-ink);
+}
+.navlink[data-active="true"] {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-crimson);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }

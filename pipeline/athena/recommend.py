@@ -57,7 +57,7 @@ def build_recommendations(facts, skills, cycles) -> list[dict]:
         "observation": (
             f"Median CTC in IT Services fell {_pct(it_change)} from {first} to {latest} "
             f"(₹{it_first:.1f}→₹{it_last:.1f} LPA), yet the sector still absorbs "
-            f"{it_share:.0f}% of all placements — the largest single share."),
+            f"{it_share:.0f}% of all placements, the largest single share."),
         "business_impact": (
             "The institution's headline salary metrics are being dragged down by a "
             "high-volume, low-growth sector. Continued dependence caps median-CTC "
@@ -82,7 +82,7 @@ def build_recommendations(facts, skills, cycles) -> list[dict]:
         "title": f"Targeted intervention for the {weak_region} region",
         "observation": (
             f"The {weak_region} region places {weak_rate:.1f}% of students versus a "
-            f"{avg_rate:.1f}% institution average — a {gap:.1f} point gap, the widest "
+            f"{avg_rate:.1f}% institution average, a {gap:.1f} point gap, the widest "
             f"of any region."),
         "business_impact": (
             f"Roughly {gap:.0f} in every 100 eligible students in {weak_region} miss "
@@ -154,7 +154,7 @@ def build_recommendations(facts, skills, cycles) -> list[dict]:
         "evidence": {"skills": growth, "overall_median_ctc": round(float(overall_med), 1)},
     })
 
-    # 5. Internship effect on placement (Operations) — hypothesis test --------
+    # 5. Internship effect on placement (Operations), hypothesis test ---------
     with_i = cur[cur.prior_internship == True]["is_placed"]
     without_i = cur[cur.prior_internship == False]["is_placed"]
     rate_with = 100.0 * with_i.mean()
@@ -166,7 +166,7 @@ def build_recommendations(facts, skills, cycles) -> list[dict]:
         "title": "Scale the pre-placement internship pipeline",
         "observation": (
             f"Students with a prior internship place at {rate_with:.1f}% versus "
-            f"{rate_without:.1f}% without one — a {rate_with - rate_without:.1f} point "
+            f"{rate_without:.1f}% without one, a {rate_with - rate_without:.1f} point "
             f"difference (Welch t-test p={pval:.3g})."),
         "business_impact": (
             "Internship exposure is one of the strongest controllable predictors of "
