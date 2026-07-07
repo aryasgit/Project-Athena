@@ -275,6 +275,37 @@ em {
   border-bottom-color: var(--color-crimson);
 }
 
+/* --- levers (range inputs), drawn as a hairline track + crimson thumb ---- */
+.lever {
+  width: 100%;
+  height: 2px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-hair);
+  outline: none;
+  cursor: pointer;
+}
+.lever::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--color-paper);
+  border: 1.5px solid var(--color-crimson);
+  border-radius: 50%;
+  transition: transform 0.15s var(--ease);
+}
+.lever::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.lever::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: var(--color-paper);
+  border: 1.5px solid var(--color-crimson);
+  border-radius: 50%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body {
     transition: none;

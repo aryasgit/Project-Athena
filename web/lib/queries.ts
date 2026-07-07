@@ -105,6 +105,47 @@ export function getForecast(seriesKey: string) {
   }, [] as ForecastPoint[]);
 }
 
+export type ScenarioBaseline = {
+  placementRate: number; medianCtc: number; cohort: number;
+  internCoverage: number; channelShare: number;
+  weakRegion: string; weakRegionRate: number;
+};
+
+export function getScenarioBaseline() {
+  const fallback: ScenarioBaseline = {
+    placementRate: 61, medianCtc: 21.2, cohort: 2600,
+    internCoverage: 41, channelShare: 60, weakRegion: "East", weakRegionRate: 56,
+  };
+  return safe(async () => {
+    const [agg] = await sql!<{ rate: number; ctc: number; cohort: number; intern: number; channel: number }[]>`
+      WITH latest AS (
+        SELECT f.*, s.prior_internship, ch.channel_type
+        FROM fact_placement f
+        JOIN dim_date d ON d.date_key = f.date_key
+        JOIN dim_student s ON s.student_key = f.student_key
+        JOIN dim_channel ch ON ch.channel_key = f.channel_key
+        WHERE d.placement_cycle = (SELECT max(placement_cycle) FROM dim_date)
+      )
+      SELECT
+        100.0 * avg(is_placed) AS rate,
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY ctc_lpa) FILTER (WHERE is_placed = 1) AS ctc,
+        count(*) AS cohort,
+        100.0 * avg((prior_internship)::int) AS intern,
+        100.0 * avg((channel_type IN ('Institutional','Networked'))::int) AS channel
+      FROM latest`;
+    const region = await sql!<{ entity: string; metric: number }[]>`
+      SELECT entity, metric FROM analytics_ranking
+      WHERE module = ${MODULE} AND ranking_key = 'region_placement_rate'
+      ORDER BY rank LIMIT 1`;
+    return {
+      placementRate: num(agg.rate), medianCtc: num(agg.ctc), cohort: num(agg.cohort),
+      internCoverage: num(agg.intern), channelShare: num(agg.channel),
+      weakRegion: region[0]?.entity ?? fallback.weakRegion,
+      weakRegionRate: region[0] ? num(region[0].metric) : fallback.weakRegionRate,
+    };
+  }, fallback);
+}
+
 export function getRecommendations() {
   return safe(async () => {
     const rows = await sql!<Recommendation[]>`

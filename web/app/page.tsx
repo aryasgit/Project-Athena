@@ -113,8 +113,9 @@ export default async function ExecutivePage() {
       <div className="grid gap-6">
         {recs.slice(0, 2).map((r) => <RecommendationCard key={r.recommendation_key} rec={r} />)}
       </div>
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/recommendations" className="gbtn">Open the Decision Center</Link>
+        <Link href="/simulator" className="gbtn">Run a what-if scenario</Link>
       </div>
     </>
   );
