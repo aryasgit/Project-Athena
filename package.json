@@ -1,0 +1,16 @@
+{
+  "name": "athena",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Project Athena — an Enterprise Organizational Digital Twin. A living systems simulation.",
+  "workspaces": [
+    "packages/*",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm --workspace web run dev",
+    "build": "npm --workspace packages/engine run build && npm --workspace web run build",
+    "engine:build": "npm --workspace packages/engine run build",
+    "engine:test": "npm --workspace packages/engine run test"
+  }
+}

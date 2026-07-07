@@ -1,0 +1,81 @@
+company_code,name,sector,company_tier
+CMP001,IT Product 1,IT Services,Product
+CMP002,IT Service 2,IT Services,Service
+CMP003,IT Product 3,IT Services,Product
+CMP004,IT Product 4,IT Services,Product
+CMP005,Software Product 5,Software Product,Product
+CMP006,Software Product 6,Software Product,Product
+CMP007,E-Commerce Global 7,E-Commerce,Global MNC
+CMP008,Software Product 8,Software Product,Product
+CMP009,Finance Service 9,Finance,Service
+CMP010,IT Service 10,IT Services,Service
+CMP011,IT Product 11,IT Services,Product
+CMP012,E-Commerce Global 12,E-Commerce,Global MNC
+CMP013,Software Global 13,Software Product,Global MNC
+CMP014,IT Product 14,IT Services,Product
+CMP015,Software Product 15,Software Product,Product
+CMP016,Software Service 16,Software Product,Service
+CMP017,Consulting Product 17,Consulting,Product
+CMP018,Finance Service 18,Finance,Service
+CMP019,Consulting Global 19,Consulting,Global MNC
+CMP020,Software Startup 20,Software Product,Startup
+CMP021,Core Service 21,Core Engineering,Service
+CMP022,Finance Startup 22,Finance,Startup
+CMP023,E-Commerce Service 23,E-Commerce,Service
+CMP024,Consulting Global 24,Consulting,Global MNC
+CMP025,Software Startup 25,Software Product,Startup
+CMP026,Consulting Global 26,Consulting,Global MNC
+CMP027,Finance Product 27,Finance,Product
+CMP028,Software Startup 28,Software Product,Startup
+CMP029,IT Service 29,IT Services,Service
+CMP030,Consulting Service 30,Consulting,Service
+CMP031,IT Service 31,IT Services,Service
+CMP032,Software Product 32,Software Product,Product
+CMP033,Software Product 33,Software Product,Product
+CMP034,Finance Global 34,Finance,Global MNC
+CMP035,Software Service 35,Software Product,Service
+CMP036,Software Startup 36,Software Product,Startup
+CMP037,IT Product 37,IT Services,Product
+CMP038,IT Global 38,IT Services,Global MNC
+CMP039,Core Product 39,Core Engineering,Product
+CMP040,E-Commerce Global 40,E-Commerce,Global MNC
+CMP041,IT Product 41,IT Services,Product
+CMP042,Core Product 42,Core Engineering,Product
+CMP043,Consulting Global 43,Consulting,Global MNC
+CMP044,Finance Product 44,Finance,Product
+CMP045,Consulting Global 45,Consulting,Global MNC
+CMP046,E-Commerce Startup 46,E-Commerce,Startup
+CMP047,Software Product 47,Software Product,Product
+CMP048,Software Service 48,Software Product,Service
+CMP049,Finance Service 49,Finance,Service
+CMP050,IT Service 50,IT Services,Service
+CMP051,Software Startup 51,Software Product,Startup
+CMP052,Software Global 52,Software Product,Global MNC
+CMP053,IT Product 53,IT Services,Product
+CMP054,E-Commerce Service 54,E-Commerce,Service
+CMP055,Finance Startup 55,Finance,Startup
+CMP056,Finance Product 56,Finance,Product
+CMP057,Finance Startup 57,Finance,Startup
+CMP058,Software Global 58,Software Product,Global MNC
+CMP059,Consulting Startup 59,Consulting,Startup
+CMP060,Core Service 60,Core Engineering,Service
+CMP061,Core Startup 61,Core Engineering,Startup
+CMP062,IT Product 62,IT Services,Product
+CMP063,E-Commerce Service 63,E-Commerce,Service
+CMP064,Consulting Global 64,Consulting,Global MNC
+CMP065,IT Global 65,IT Services,Global MNC
+CMP066,Core Global 66,Core Engineering,Global MNC
+CMP067,Software Service 67,Software Product,Service
+CMP068,Software Global 68,Software Product,Global MNC
+CMP069,IT Startup 69,IT Services,Startup
+CMP070,Software Product 70,Software Product,Product
+CMP071,E-Commerce Startup 71,E-Commerce,Startup
+CMP072,IT Global 72,IT Services,Global MNC
+CMP073,Software Global 73,Software Product,Global MNC
+CMP074,Software Service 74,Software Product,Service
+CMP075,Software Product 75,Software Product,Product
+CMP076,IT Service 76,IT Services,Service
+CMP077,Software Service 77,Software Product,Service
+CMP078,IT Service 78,IT Services,Service
+CMP079,Software Global 79,Software Product,Global MNC
+CMP080,Core Product 80,Core Engineering,Product

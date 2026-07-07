@@ -13,6 +13,8 @@ node_modules/
 .next/
 out/
 .vercel/
+dist/
+*.tsbuildinfo
 npm-debug.log*
 .env.local
 .env*.local

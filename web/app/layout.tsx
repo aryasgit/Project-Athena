@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { TopNav } from "@/components/TopNav";
-import { StatusBar } from "@/components/StatusBar";
-import { WordmarkFooter } from "@/components/WordmarkFooter";
+import { TopologyField } from "@/components/TopologyField";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 export const metadata: Metadata = {
-  title: "Athena · Enterprise Decision Intelligence",
+  title: "ATHENA // Organizational Digital Twin",
   description:
-    "Turning organizational data into strategic recommendations. Placement Intelligence module.",
+    "Signal over noise. A living systems observatory — create a company, run the simulation, and watch an organization evolve through thousands of interacting decisions.",
 };
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap";
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,12 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href={FONTS} />
       </head>
       <body className="min-h-screen">
-        <TopNav />
-        <main className="mx-auto max-w-[1320px] px-5 pb-4 pt-10 md:px-10 md:pt-16">
-          {children}
-        </main>
-        <WordmarkFooter />
-        <StatusBar />
+        {/* the living system, ambient */}
+        <TopologyField className="pointer-events-none fixed inset-0 -z-10 h-full w-full opacity-70" />
+        <SmoothScroll>{children}</SmoothScroll>
+        <div className="scanlines" aria-hidden />
+        <div className="grain" aria-hidden />
       </body>
     </html>
   );
