@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { answer } from "@/lib/nl";
+import { PersonaKey } from "@/lib/ai/personas";
+
+export const dynamic = "force-dynamic";
 
 /**
- * Server-side proxy to the Athena orchestration API. The browser cannot reach
- * the internal API host, so the question is forwarded here. If no API URL is
- * configured the route degrades gracefully rather than erroring.
+ * The natural-language endpoint runs in-app: it retrieves structured evidence
+ * (from Postgres or the snapshot) and reasons over it, using the AI provider
+ * only if one is configured. No external Python service is required.
  */
 export async function POST(req: NextRequest) {
-  const base = process.env.ATHENA_API_URL;
-  if (!base) {
-    return NextResponse.json(
-      { unavailable: true, message: "The natural-language service is not configured. Set ATHENA_API_URL to the orchestration API." },
-      { status: 200 },
-    );
-  }
   try {
-    const body = await req.json();
-    const res = await fetch(`${base}/ask`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(60_000),
-    });
-    if (!res.ok) throw new Error(`api ${res.status}`);
-    return NextResponse.json(await res.json());
+    const { question, persona } = await req.json();
+    if (!question || typeof question !== "string") {
+      return NextResponse.json({ unavailable: true, message: "A question is required." });
+    }
+    const result = await answer(question, (persona as PersonaKey) ?? "executive");
+    return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json(
-      { unavailable: true, message: "Could not reach the analysis service. Is the API running?", detail: String(err) },
-      { status: 200 },
+      { unavailable: true, message: "Something went wrong answering that.", detail: String(err) },
     );
   }
 }
