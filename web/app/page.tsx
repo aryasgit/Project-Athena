@@ -65,7 +65,7 @@ export default async function OverviewPage() {
   return (
     <>
       <PageHeader plate={meta.header.plate} label={meta.header.label}
-        title={headerTitle(meta.header)} lede={meta.header.lede} />
+        title={headerTitle(meta.header)} tail={meta.header.tail} lede={meta.header.lede} />
 
       <Figures kpis={kpis} />
 

@@ -22,26 +22,25 @@ export function Plate({ children, className = "", style }: {
   );
 }
 
-/* The page masthead block: plate eyebrow, drawn rule, serif title, lede. */
-export function PageHeader({ plate, label, title, lede }: {
-  plate: string; label: string; title: ReactNode; lede?: string;
+/* Monumental two-tone masthead: a white statement, a grey elaboration. */
+export function PageHeader({ plate, label, title, tail, lede }: {
+  plate?: string; label: string; title: ReactNode; tail?: ReactNode; lede?: string;
 }) {
   return (
-    <header className="mb-12">
-      <div className="eyebrow mb-5">
-        <span className="pl">{plate}</span>
+    <header className="mb-16 pt-2">
+      <div className="mb-9 flex items-center gap-2.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-faint">
+        {plate && <span className="text-str">{plate}</span>}
         <span>{label}</span>
-        <span className="ln" />
       </div>
-      <div className="rule mb-5" />
       <h1
-        className="max-w-[16ch] font-extrabold leading-[0.98] tracking-[-0.04em] text-ink"
-        style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.6rem,6vw,4.6rem)" }}
+        className="max-w-[19ch] font-extrabold leading-[0.92] tracking-[-0.045em] text-ink"
+        style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem,6.8vw,5.4rem)" }}
       >
         {title}
+        {tail && <span className="text-muted"> {tail}</span>}
       </h1>
       {lede && (
-        <p className="mt-4 max-w-[60ch] text-[0.98rem] leading-relaxed text-muted">{lede}</p>
+        <p className="mt-8 max-w-[52ch] text-[0.95rem] leading-relaxed text-muted">{lede}</p>
       )}
     </header>
   );
@@ -126,7 +125,7 @@ export function ModuleNotice({ moduleName }: { moduleName: string }) {
 
 export function DomainTag({ domain }: { domain: string }) {
   return (
-    <span className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.02em] text-fn">
+    <span className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.06em] text-muted">
       {domain}
     </span>
   );

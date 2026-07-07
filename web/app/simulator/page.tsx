@@ -11,8 +11,8 @@ export default async function SimulatorPage() {
   if (module !== "placement") {
     return (
       <>
-        <PageHeader plate="Plate I" label="Decision Simulator"
-          title={<>Change the assumptions, <em>watch the decision move</em>.</>} />
+        <PageHeader plate="03" label="Decision Simulator"
+          title={<>Change the <em>assumptions</em>.</>} tail="Watch the decision move." />
         <ModuleNotice moduleName={MODULE_META[module].name} />
       </>
     );
@@ -22,9 +22,9 @@ export default async function SimulatorPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="03"
         label="Decision Simulator"
-        title={<>Change the assumptions, <em>watch the decision move</em>.</>}
+        title={<>Change the <em>assumptions</em>.</>} tail="Watch the decision move."
         lede="This is not a report you read. Move a lever and Athena recomputes the projected outcome from the same model the data was built on, then tells you whether the scenario is worth pursuing."
       />
 

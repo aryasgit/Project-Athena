@@ -12,8 +12,8 @@ export default async function SkillsPage() {
   if (module !== "placement") {
     return (
       <>
-        <PageHeader plate="Plate I" label="Talent and Skill Analytics"
-          title={<>What the market <em>pays for</em>.</>} />
+        <PageHeader plate="02" label="Talent and Skill Analytics"
+          title={<>What the market <em>pays for</em>.</>} tail="And where it is heading." />
         <ModuleNotice moduleName={MODULE_META[module].name} />
       </>
     );
@@ -48,9 +48,9 @@ export default async function SkillsPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="02"
         label="Talent and Skill Analytics"
-        title={<>What the market <em>pays for</em>.</>}
+        title={<>What the market <em>pays for</em>.</>} tail="And where it is heading."
         lede="Which skills carry a salary premium, which are becoming critical, and what that means for curriculum and hiring strategy."
       />
 

@@ -7,7 +7,7 @@ export type PanelSrc = "series" | "ranking";
 
 export type ModuleMeta = {
   name: string;
-  header: { plate: string; label: string; pre: string; em: string; post: string; lede: string };
+  header: { plate: string; label: string; pre: string; em: string; post: string; tail: string; lede: string };
   forecastPrimary: { key: string; title: string; hint: string; unit: string; money: boolean };
   forecastVolume: { key: string; title: string; hint: string };
   line: { key: string; title: string; hint: string };
@@ -19,8 +19,9 @@ export const MODULE_META: Record<ModuleId, ModuleMeta> = {
   placement: {
     name: "Placement Intelligence",
     header: {
-      plate: "Plate I", label: "Enterprise Decision Intelligence",
+      plate: "01", label: "Decision Intelligence · Placement Command",
       pre: "The executive", em: "reading", post: ".",
+      tail: "Then the decision it forces.",
       lede: "Placement Intelligence for the 2024 to 2025 cycle. Headline outcomes, forward projections, and the decisions they point to.",
     },
     forecastPrimary: { key: "median_ctc_cycle", title: "Median CTC trajectory", hint: "actuals to next cycle", unit: " LPA", money: true },
@@ -39,8 +40,9 @@ export const MODULE_META: Record<ModuleId, ModuleMeta> = {
   finance: {
     name: "Finance Intelligence",
     header: {
-      plate: "Plate I", label: "Enterprise Decision Intelligence",
+      plate: "01", label: "Decision Intelligence · Finance Command",
       pre: "The financial", em: "position", post: ".",
+      tail: "Where margin lives, and what to fund.",
       lede: "Revenue, margin and profit for FY 2024. Where growth and margin concentrate, and the capital-allocation decisions that follow.",
     },
     forecastPrimary: { key: "median_ctc_cycle", title: "Revenue trajectory", hint: "actuals to next year", unit: " Cr", money: true },

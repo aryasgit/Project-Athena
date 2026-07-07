@@ -11,9 +11,10 @@ export default async function BriefPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="06"
         label="AI Executive Brief"
         title={<>The board-ready <em>brief</em>.</>}
+        tail="Numbers by the engine, words by the model."
         lede="Executives read summaries, not dashboards. This brief is assembled from the deterministic analytics, then, when a model is available, rewritten by the AI layer. Every number stays traceable to the analysis."
       />
 

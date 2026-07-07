@@ -11,8 +11,8 @@ export default async function ConsultingPage() {
   if (module !== "placement") {
     return (
       <>
-        <PageHeader plate="Plate I" label="Guided Consulting Mode"
-          title={<>Think it through, <em>step by step</em>.</>} />
+        <PageHeader plate="03" label="Guided Consulting Mode"
+          title={<>Think it <em>through</em>.</>} tail="Step by step, backed by the data." />
         <ModuleNotice moduleName={MODULE_META[module].name} />
       </>
     );
@@ -28,9 +28,9 @@ export default async function ConsultingPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="03"
         label="Guided Consulting Mode"
-        title={<>Think it through, <em>step by step</em>.</>}
+        title={<>Think it <em>through</em>.</>} tail="Step by step, backed by the data."
         lede="A structured walkthrough of how a consultant reads this business: understand the position, diagnose where the problem sits, segment the drivers, then decide. Each step is backed by the live analysis."
       />
       <PlateLabel plate="Plate II" label="The engagement" />

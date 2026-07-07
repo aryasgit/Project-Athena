@@ -9,8 +9,8 @@ const H = 236;
 const PAD = { top: 18, right: 16, bottom: 32, left: 46 };
 
 const CRIMSON = "var(--color-crimson)";
-const NUM = "var(--color-num)";
-const FN = "var(--color-fn)";
+const NUM = "var(--color-ink-2)";   // projections in light grey, not colour
+const FN = "var(--color-ink-2)";    // alternate bars in light grey
 const HAIR = "var(--color-hair)";
 const INK = "var(--color-ink)";
 const PAPER = "var(--color-paper)";

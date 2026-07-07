@@ -7,9 +7,10 @@ export default function AskPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="04"
         label="Natural Language Interface"
-        title={<>Ask the business a <em>question</em>.</>}
+        title={<>Ask a <em>question</em>.</>}
+        tail="It finds the numbers first, then reasons."
         lede="Type a question in plain language. Athena retrieves the relevant analytical results first, then reasons over them, so every answer is grounded in the numbers and cites its evidence."
       />
       <PlateLabel plate="Plate II" label="The decision console" />

@@ -18,9 +18,10 @@ export default async function RecommendationsPage() {
   return (
     <>
       <PageHeader
-        plate="Plate I"
+        plate="07"
         label="The Decision Center"
         title={<>Every analysis becomes a <em>decision</em>.</>}
+        tail="Observed, weighed, then acted on."
         lede="Each entry states what was observed, why it matters, and the action it recommends. Nothing stops at the chart."
       />
 
