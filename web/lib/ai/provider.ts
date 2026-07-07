@@ -142,8 +142,8 @@ async function callGemini(model: string, a: GenerateArgs, signal: AbortSignal) {
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: a.system }] },
       contents: [{ role: "user", parts: [{ text: a.prompt }] }],
-      // Gemini 2.5 Flash is a thinking model; disable thinking so tokens go to
-      // the answer, not internal reasoning (faster and cheaper for this use).
+      // Gemini 2.5+ Flash models can "think" before answering; disable it so
+      // tokens go to the answer, not internal reasoning (faster and cheaper).
       generationConfig: { temperature: a.temperature ?? 0.3, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
