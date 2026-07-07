@@ -29,6 +29,9 @@ SHARED_RULES = (
     "- Cite the specific figures you rely on.\n"
     "- Plain, board-ready business English. No filler.\n"
     "- Do not use em dashes. Use commas, periods, colons, or the word 'to'.\n"
+    "- Monetary values are in Indian Rupees, lakhs per annum. Write them as "
+    "'₹X.X LPA'. Never convert currency or rescale (₹21.2 LPA stays ₹21.2 LPA).\n"
+    "- Rates, premiums, and shares are percentages. Keep them as percentages.\n"
     "- Be concise."
 )
 
