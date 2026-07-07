@@ -16,7 +16,7 @@ DEFAULT_MODELS = {
     "openrouter": "meta-llama/llama-3.1-70b-instruct",
     "openai": "gpt-4o-mini",
     "anthropic": "claude-3-5-haiku-latest",
-    "gemini": "gemini-2.5-flash",
+    "gemini": "gemini-3.1-flash-lite",
 }
 
 # Personas: consultants that reason over structured JSON and cite figures.

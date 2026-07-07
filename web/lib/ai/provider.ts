@@ -25,7 +25,7 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   openrouter: "meta-llama/llama-3.1-70b-instruct",
   openai: "gpt-4o-mini",
   anthropic: "claude-3-5-haiku-latest",
-  gemini: "gemini-2.5-flash",
+  gemini: "gemini-3.1-flash-lite",
   none: "",
 };
 
