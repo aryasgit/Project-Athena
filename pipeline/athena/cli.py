@@ -65,6 +65,13 @@ def snapshot() -> None:
 
 
 @cli.command()
+def finance() -> None:
+    """Build the Finance module result rows (module='finance')."""
+    from .finance import build_finance
+    _timed("Building finance module", build_finance)
+
+
+@cli.command()
 def build() -> None:
     """Run the full analytical build: ingest → analyze → forecast → recommend."""
     from .ingest import ingest as _ingest
