@@ -43,7 +43,7 @@ export function EventFeed({ events }: { events: OrgEvent[] }) {
               >
                 {e.title}
               </p>
-              <p className="mono mt-0.5 text-[0.72rem] leading-snug text-[var(--color-muted)]">{e.detail}</p>
+              <p className="mt-1 text-[0.78rem] leading-snug text-[var(--color-muted)]">{e.detail}</p>
             </motion.li>
           );
         })}

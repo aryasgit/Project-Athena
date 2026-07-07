@@ -72,7 +72,7 @@ export default function Landing() {
           </h1>
 
           <div className="mt-8 grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-end">
-            <p className="mono max-w-[52ch] text-[0.95rem] leading-relaxed text-[var(--color-ash-2)]">
+            <p className="max-w-[52ch] text-[1rem] leading-relaxed text-[var(--color-ash-2)]">
               We don&apos;t visualize the past. We simulate the <em>life</em> of an organization —
               thousands of interconnected decisions made by departments, employees, executives,
               customers and markets, accumulating over time. <span className="text-[var(--color-ash)]">Signal over noise.</span>
@@ -97,7 +97,7 @@ export default function Landing() {
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="mono mt-8 max-w-[62ch] text-[0.85rem] leading-relaxed text-[var(--color-muted)]">
+            <p className="mt-8 max-w-[62ch] text-[0.95rem] leading-relaxed text-[var(--color-muted)]">
               Every component of Athena earns its place by helping answer this. It is not built to
               predict reality — it is built to simulate plausible organizational behaviour under
               uncertainty. Closer to SimCity than to a spreadsheet.
@@ -117,7 +117,7 @@ export default function Landing() {
                   <span className="display text-4xl text-[var(--color-grid-2)] md:text-5xl">{l.id}</span>
                   <div>
                     <DecodeText as="h3" onView text={l.title} className="display block text-xl tracking-tight md:text-2xl" />
-                    <p className="mono mt-2 max-w-[68ch] text-[0.8rem] leading-relaxed text-[var(--color-muted)]">{l.body}</p>
+                    <p className="mt-2 max-w-[68ch] text-[0.9rem] leading-relaxed text-[var(--color-muted)]">{l.body}</p>
                   </div>
                   <span
                     className="mono self-start text-[0.6rem] uppercase tracking-widest md:self-center"
@@ -146,8 +146,8 @@ export default function Landing() {
                   <span className="display w-[8ch] text-2xl tracking-tight transition-colors group-hover:text-[var(--color-phosphor)] md:text-3xl">
                     {p.name}
                   </span>
-                  <span className="mono text-[0.85rem] text-[var(--color-ash-2)]">{p.models}</span>
-                  <span className="mono ml-auto text-[0.75rem] text-[var(--color-muted)]">{p.q}</span>
+                  <span className="text-[0.9rem] text-[var(--color-ash-2)]">{p.models}</span>
+                  <span className="ml-auto text-[0.85rem] text-[var(--color-muted)]">{p.q}</span>
                 </div>
               </Reveal>
             ))}

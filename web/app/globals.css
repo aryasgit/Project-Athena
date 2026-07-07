@@ -47,7 +47,7 @@
 
   --font-display: "Space Grotesk", "Arial Narrow", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-sans: var(--font-mono); /* body reads as raw output */
+  --font-sans: "Inter", system-ui, sans-serif; /* readable prose */
 }
 
 :root {
@@ -62,10 +62,9 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--color-void);
   color: var(--color-ash);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
   line-height: 1.65;
-  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
