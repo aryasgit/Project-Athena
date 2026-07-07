@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plate } from "@/components/ui";
+import { Markdown } from "@/components/Markdown";
 
 type Answer = {
   answer?: string;
@@ -109,9 +110,10 @@ export function AskConsole() {
                   evidence retrieved before answering
                 </span>
               </div>
-              <p className="font-serif text-[1.18rem] leading-[1.5] text-ink" style={{ fontFamily: "var(--font-serif)" }}>
-                {answer.answer}
-              </p>
+              <div style={{ fontFamily: "var(--font-serif)" }}>
+                <Markdown text={answer.answer ?? ""} className="text-[1.16rem] leading-[1.5] text-ink" />
+              </div>
+
               {answer.citations && answer.citations.length > 0 && (
                 <div className="mt-5 border-t border-hair-soft pt-4">
                   <div className="mb-2 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-muted">

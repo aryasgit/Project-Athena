@@ -92,7 +92,9 @@ export async function answer(question: string, persona: PersonaKey = "executive"
     const prompt =
       `Question: "${question}"\n\n` +
       "Answer the question using ONLY the evidence below. Cite the figures you use. " +
-      "If the evidence does not answer it, say so plainly.\n\nEVIDENCE:\n" +
+      "If the evidence does not answer it, say so plainly. " +
+      "Keep it tight: one short paragraph, then if there are actions put each on its own " +
+      "line starting with '- '. Use **bold** only for a few key terms.\n\nEVIDENCE:\n" +
       JSON.stringify(evidence, null, 2);
     const text = await generate({ system: PERSONAS[persona].system, prompt, temperature: 0.3 });
     if (text) {

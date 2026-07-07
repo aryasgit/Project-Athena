@@ -1,6 +1,6 @@
 import { buildExecutiveBrief } from "@/lib/brief";
 import { Plate, PageHeader, PlateLabel } from "@/components/ui";
-import { RecommendationCard } from "@/components/RecommendationCard";
+import { Markdown } from "@/components/Markdown";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +29,9 @@ export default async function BriefPage() {
 
       <PlateLabel plate="Plate II" label="Executive summary" />
       <Plate className="p-6">
-        <p className="font-serif text-[1.24rem] leading-[1.5] text-ink" style={{ fontFamily: "var(--font-serif)" }}>
-          {brief.summary}
-        </p>
+        <div style={{ fontFamily: "var(--font-serif)" }}>
+          <Markdown text={brief.summary} className="text-[1.22rem] leading-[1.5] text-ink" />
+        </div>
       </Plate>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
