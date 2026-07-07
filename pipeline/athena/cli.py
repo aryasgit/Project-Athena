@@ -58,6 +58,13 @@ def recommend() -> None:
 
 
 @cli.command()
+def snapshot() -> None:
+    """Export result tables to web/data/snapshot.json for a database-free deploy."""
+    from .snapshot import export
+    _timed("Exporting snapshot", export)
+
+
+@cli.command()
 def build() -> None:
     """Run the full analytical build: ingest → analyze → forecast → recommend."""
     from .ingest import ingest as _ingest

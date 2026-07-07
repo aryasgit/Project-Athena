@@ -1,4 +1,7 @@
 import { sql, MODULE } from "./db";
+import { SNAPSHOT, snapSeries, snapRanking, snapForecast } from "./snapshot";
+
+const asNum = (v: unknown) => (v == null ? null : Number(v));
 
 export type Kpi = {
   metric_key: string;
@@ -65,7 +68,10 @@ export function getKpis() {
       FROM analytics_kpi WHERE module = ${MODULE}
       ORDER BY metric_key`;
     return rows.map((r) => ({ ...r, value: num(r.value), delta: r.delta == null ? null : num(r.delta) }));
-  }, [] as Kpi[]);
+  }, SNAPSHOT.kpis.map((r) => ({
+    metric_key: r.metric_key, label: r.label, unit: r.unit, context: r.context,
+    value: num(r.value), delta: asNum(r.delta),
+  })) as Kpi[]);
 }
 
 export function getSeries(seriesKey: string) {
@@ -75,7 +81,9 @@ export function getSeries(seriesKey: string) {
       WHERE module = ${MODULE} AND series_key = ${seriesKey}
       ORDER BY id`;
     return rows.map((r) => ({ ...r, period: r.period == null ? null : isoDate(r.period), value: num(r.value) }));
-  }, [] as SeriesPoint[]);
+  }, snapSeries(seriesKey).map((r) => ({
+    period: (r.period as string) ?? null, dimension: (r.dimension as string) ?? null, value: num(r.value),
+  })) as SeriesPoint[]);
 }
 
 export function getRanking(rankingKey: string) {
@@ -87,7 +95,10 @@ export function getRanking(rankingKey: string) {
     return rows.map((r) => ({
       ...r, metric: num(r.metric), secondary: r.secondary == null ? null : num(r.secondary),
     }));
-  }, [] as RankingRow[]);
+  }, snapRanking(rankingKey).map((r) => ({
+    entity: r.entity as string, dimension: (r.dimension as string) ?? null,
+    metric: num(r.metric), secondary: asNum(r.secondary), rank: num(r.rank),
+  })) as RankingRow[]);
 }
 
 export function getForecast(seriesKey: string) {
@@ -102,7 +113,11 @@ export function getForecast(seriesKey: string) {
       yhat_lower: r.yhat_lower == null ? null : num(r.yhat_lower),
       yhat_upper: r.yhat_upper == null ? null : num(r.yhat_upper),
     }));
-  }, [] as ForecastPoint[]);
+  }, snapForecast(seriesKey).map((r) => ({
+    period: (r.period as string) ?? "", dimension: (r.dimension as string) ?? null,
+    yhat: num(r.yhat), yhat_lower: asNum(r.yhat_lower), yhat_upper: asNum(r.yhat_upper),
+    is_forecast: Boolean(r.is_forecast),
+  })) as ForecastPoint[]);
 }
 
 export type ScenarioBaseline = {
@@ -112,10 +127,7 @@ export type ScenarioBaseline = {
 };
 
 export function getScenarioBaseline() {
-  const fallback: ScenarioBaseline = {
-    placementRate: 61, medianCtc: 21.2, cohort: 2600,
-    internCoverage: 41, channelShare: 60, weakRegion: "East", weakRegionRate: 56,
-  };
+  const fallback = SNAPSHOT.scenarioBaseline as ScenarioBaseline;
   return safe(async () => {
     const [agg] = await sql!<{ rate: number; ctc: number; cohort: number; intern: number; channel: number }[]>`
       WITH latest AS (
@@ -156,5 +168,10 @@ export function getRecommendations() {
         CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END,
         recommendation_key`;
     return rows.map((r) => ({ ...r, confidence: r.confidence == null ? null : num(r.confidence) }));
-  }, [] as Recommendation[]);
+  }, SNAPSHOT.recommendations.map((r) => ({
+    recommendation_key: num(r.recommendation_key), domain: r.domain, title: r.title,
+    observation: r.observation, business_impact: r.business_impact,
+    recommended_action: r.recommended_action, priority: r.priority,
+    confidence: asNum(r.confidence), evidence: r.evidence as Record<string, unknown>,
+  })) as Recommendation[]);
 }

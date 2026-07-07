@@ -1,0 +1,1222 @@
+{
+  "module": "placement",
+  "kpis": [
+    {
+      "metric_key": "avg_offers",
+      "label": "Avg Offers / Placed Student",
+      "value": 1.34300126103405,
+      "unit": "",
+      "delta": null,
+      "context": "Cycle 2024-25"
+    },
+    {
+      "metric_key": "median_ctc",
+      "label": "Median CTC",
+      "value": 21.225,
+      "unit": "LPA",
+      "delta": 1.385,
+      "context": "Cycle 2024-25"
+    },
+    {
+      "metric_key": "placement_rate",
+      "label": "Placement Rate",
+      "value": 61.0,
+      "unit": "%",
+      "delta": -1.0,
+      "context": "Cycle 2024-25"
+    },
+    {
+      "metric_key": "top_sector_hiring",
+      "label": "Top Hiring Sector",
+      "value": 538.0,
+      "unit": "hires",
+      "delta": null,
+      "context": "Software Product"
+    },
+    {
+      "metric_key": "total_placements",
+      "label": "Students Placed",
+      "value": 1586.0,
+      "unit": "",
+      "delta": -26.0,
+      "context": "Cycle 2024-25"
+    }
+  ],
+  "series": {
+    "placement_rate_by_cycle": [
+      {
+        "series_key": "placement_rate_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "2022-23",
+        "value": 59.6538461538462
+      },
+      {
+        "series_key": "placement_rate_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "2023-24",
+        "value": 62.0
+      },
+      {
+        "series_key": "placement_rate_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "2024-25",
+        "value": 61.0
+      }
+    ],
+    "median_ctc_by_cycle": [
+      {
+        "series_key": "median_ctc_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "2022-23",
+        "value": 18.47
+      },
+      {
+        "series_key": "median_ctc_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "2023-24",
+        "value": 19.84
+      },
+      {
+        "series_key": "median_ctc_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "2024-25",
+        "value": 21.225
+      }
+    ],
+    "placement_rate_by_tier": [
+      {
+        "series_key": "placement_rate_by_tier",
+        "period": null,
+        "dimension": "Tier-1",
+        "value": 64.9501661129568
+      },
+      {
+        "series_key": "placement_rate_by_tier",
+        "period": null,
+        "dimension": "Tier-2",
+        "value": 63.5782747603834
+      },
+      {
+        "series_key": "placement_rate_by_tier",
+        "period": null,
+        "dimension": "Tier-3",
+        "value": 56.4683663833806
+      }
+    ],
+    "median_ctc_by_sector_cycle": [
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "Consulting|2022-23",
+        "value": 19.65
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "Core Engineering|2022-23",
+        "value": 12.71
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "E-Commerce|2022-23",
+        "value": 21.905
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "Finance|2022-23",
+        "value": 25.7
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "IT Services|2022-23",
+        "value": 10.57
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2023-04-15",
+        "dimension": "Software Product|2022-23",
+        "value": 22.865
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "Consulting|2023-24",
+        "value": 21.69
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "Core Engineering|2023-24",
+        "value": 13.29
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "E-Commerce|2023-24",
+        "value": 23.275
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "Finance|2023-24",
+        "value": 26.93
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "IT Services|2023-24",
+        "value": 10.06
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2024-04-15",
+        "dimension": "Software Product|2023-24",
+        "value": 25.08
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "Consulting|2024-25",
+        "value": 22.11
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "Core Engineering|2024-25",
+        "value": 12.38
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "E-Commerce|2024-25",
+        "value": 24.265
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "Finance|2024-25",
+        "value": 30.3
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "IT Services|2024-25",
+        "value": 9.76
+      },
+      {
+        "series_key": "median_ctc_by_sector_cycle",
+        "period": "2025-04-15",
+        "dimension": "Software Product|2024-25",
+        "value": 27.29
+      }
+    ],
+    "placement_rate_by_channel": [
+      {
+        "series_key": "placement_rate_by_channel",
+        "period": null,
+        "dimension": "Direct Application",
+        "value": 58.8469184890656
+      },
+      {
+        "series_key": "placement_rate_by_channel",
+        "period": null,
+        "dimension": "Job Portal",
+        "value": 57.9654510556622
+      },
+      {
+        "series_key": "placement_rate_by_channel",
+        "period": null,
+        "dimension": "On-Campus",
+        "value": 67.8707224334601
+      },
+      {
+        "series_key": "placement_rate_by_channel",
+        "period": null,
+        "dimension": "Recruitment Agency",
+        "value": 55.5984555984556
+      },
+      {
+        "series_key": "placement_rate_by_channel",
+        "period": null,
+        "dimension": "Referral",
+        "value": 64.4736842105263
+      }
+    ],
+    "skill_demand_by_cycle": [
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "Machine Learning|2022-23",
+        "value": 18.0528691166989
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "AWS|2022-23",
+        "value": 17.2791747259832
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "System Design|2022-23",
+        "value": 20.1160541586074
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "Kubernetes|2022-23",
+        "value": 20.3739522888459
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "SQL|2022-23",
+        "value": 17.9239200515796
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2023-04-15",
+        "dimension": "Python|2022-23",
+        "value": 21.0186976144423
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "Machine Learning|2023-24",
+        "value": 21.5880893300248
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "AWS|2023-24",
+        "value": 23.3870967741935
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "System Design|2023-24",
+        "value": 25.6203473945409
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "Kubernetes|2023-24",
+        "value": 24.8759305210918
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "SQL|2023-24",
+        "value": 14.0818858560794
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2024-04-15",
+        "dimension": "Python|2023-24",
+        "value": 16.9354838709677
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "Machine Learning|2024-25",
+        "value": 26.6078184110971
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "AWS|2024-25",
+        "value": 29.0668348045397
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "System Design|2024-25",
+        "value": 28.8146279949559
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "Kubernetes|2024-25",
+        "value": 28.2471626733922
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "SQL|2024-25",
+        "value": 13.6191677175284
+      },
+      {
+        "series_key": "skill_demand_by_cycle",
+        "period": "2025-04-15",
+        "dimension": "Python|2024-25",
+        "value": 15.1324085750315
+      }
+    ]
+  },
+  "rankings": {
+    "top_universities_by_salary": [
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "East Institute of Technology 19",
+        "dimension": null,
+        "metric": 34.38,
+        "secondary": 65.8227848101266,
+        "rank": 1
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "West Institute of Technology 20",
+        "dimension": null,
+        "metric": 34.35,
+        "secondary": 64.9350649350649,
+        "rank": 2
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "East Institute of Technology 15",
+        "dimension": null,
+        "metric": 34.21,
+        "secondary": 67.4157303370787,
+        "rank": 3
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "Central Institute of Technology 26",
+        "dimension": null,
+        "metric": 31.96,
+        "secondary": 63.2911392405063,
+        "rank": 4
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "Central Institute of Technology 5",
+        "dimension": null,
+        "metric": 31.81,
+        "secondary": 68.8888888888889,
+        "rank": 5
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "South Institute of Technology 30",
+        "dimension": null,
+        "metric": 31.52,
+        "secondary": 62.7450980392157,
+        "rank": 6
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "West Institute of Technology 3",
+        "dimension": null,
+        "metric": 30.88,
+        "secondary": 61.6279069767442,
+        "rank": 7
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "Central Institute of Technology 9",
+        "dimension": null,
+        "metric": 24.32,
+        "secondary": 66.3265306122449,
+        "rank": 8
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "West Institute of Technology 14",
+        "dimension": null,
+        "metric": 24.045,
+        "secondary": 60.2409638554217,
+        "rank": 9
+      },
+      {
+        "ranking_key": "top_universities_by_salary",
+        "entity": "North Institute of Technology 6",
+        "dimension": null,
+        "metric": 23.68,
+        "secondary": 62.0253164556962,
+        "rank": 10
+      }
+    ],
+    "skill_salary_premium": [
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "System Design",
+        "dimension": null,
+        "metric": 7.79740871613662,
+        "secondary": 22.88,
+        "rank": 1
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Machine Learning",
+        "dimension": null,
+        "metric": 7.6796230859835,
+        "secondary": 22.855,
+        "rank": 2
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Deep Learning",
+        "dimension": null,
+        "metric": 6.38398115429916,
+        "secondary": 22.58,
+        "rank": 3
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "SQL",
+        "dimension": null,
+        "metric": 4.45229681978799,
+        "secondary": 22.17,
+        "rank": 4
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Kubernetes",
+        "dimension": null,
+        "metric": 2.54416961130742,
+        "secondary": 21.765,
+        "rank": 5
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Spark",
+        "dimension": null,
+        "metric": 2.5206124852768,
+        "secondary": 21.76,
+        "rank": 6
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "NLP",
+        "dimension": null,
+        "metric": 2.47349823321554,
+        "secondary": 21.75,
+        "rank": 7
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "AWS",
+        "dimension": null,
+        "metric": 2.0494699646643,
+        "secondary": 21.66,
+        "rank": 8
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Problem Solving",
+        "dimension": null,
+        "metric": 1.86101295641931,
+        "secondary": 21.62,
+        "rank": 9
+      },
+      {
+        "ranking_key": "skill_salary_premium",
+        "entity": "Azure",
+        "dimension": null,
+        "metric": 1.67255594817431,
+        "secondary": 21.58,
+        "rank": 10
+      }
+    ],
+    "most_demanded_skills": [
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "AWS",
+        "dimension": null,
+        "metric": 29.0668348045397,
+        "secondary": 461.0,
+        "rank": 1
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "System Design",
+        "dimension": null,
+        "metric": 28.8146279949559,
+        "secondary": 457.0,
+        "rank": 2
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Kubernetes",
+        "dimension": null,
+        "metric": 28.2471626733922,
+        "secondary": 448.0,
+        "rank": 3
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Spark",
+        "dimension": null,
+        "metric": 27.3013871374527,
+        "secondary": 433.0,
+        "rank": 4
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Machine Learning",
+        "dimension": null,
+        "metric": 26.6078184110971,
+        "secondary": 422.0,
+        "rank": 5
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "NLP",
+        "dimension": null,
+        "metric": 24.4640605296343,
+        "secondary": 388.0,
+        "rank": 6
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Financial Modeling",
+        "dimension": null,
+        "metric": 16.8348045397226,
+        "secondary": 267.0,
+        "rank": 7
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "React",
+        "dimension": null,
+        "metric": 16.7717528373266,
+        "secondary": 266.0,
+        "rank": 8
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Go",
+        "dimension": null,
+        "metric": 16.3934426229508,
+        "secondary": 260.0,
+        "rank": 9
+      },
+      {
+        "ranking_key": "most_demanded_skills",
+        "entity": "Docker",
+        "dimension": null,
+        "metric": 15.9520807061791,
+        "secondary": 253.0,
+        "rank": 10
+      }
+    ],
+    "region_placement_rate": [
+      {
+        "ranking_key": "region_placement_rate",
+        "entity": "South",
+        "dimension": null,
+        "metric": 55.6851311953353,
+        "secondary": null,
+        "rank": 1
+      },
+      {
+        "ranking_key": "region_placement_rate",
+        "entity": "North",
+        "dimension": null,
+        "metric": 57.4175824175824,
+        "secondary": null,
+        "rank": 2
+      },
+      {
+        "ranking_key": "region_placement_rate",
+        "entity": "East",
+        "dimension": null,
+        "metric": 60.4738154613466,
+        "secondary": null,
+        "rank": 3
+      },
+      {
+        "ranking_key": "region_placement_rate",
+        "entity": "West",
+        "dimension": null,
+        "metric": 63.594470046083,
+        "secondary": null,
+        "rank": 4
+      },
+      {
+        "ranking_key": "region_placement_rate",
+        "entity": "Central",
+        "dimension": null,
+        "metric": 65.2272727272727,
+        "secondary": null,
+        "rank": 5
+      }
+    ],
+    "channel_effectiveness": [
+      {
+        "ranking_key": "channel_effectiveness",
+        "entity": "On-Campus",
+        "dimension": null,
+        "metric": 67.8707224334601,
+        "secondary": 20.96,
+        "rank": 1
+      },
+      {
+        "ranking_key": "channel_effectiveness",
+        "entity": "Referral",
+        "dimension": null,
+        "metric": 64.4736842105263,
+        "secondary": 23.63,
+        "rank": 2
+      },
+      {
+        "ranking_key": "channel_effectiveness",
+        "entity": "Direct Application",
+        "dimension": null,
+        "metric": 58.8469184890656,
+        "secondary": 20.52,
+        "rank": 3
+      },
+      {
+        "ranking_key": "channel_effectiveness",
+        "entity": "Job Portal",
+        "dimension": null,
+        "metric": 57.9654510556622,
+        "secondary": 19.715,
+        "rank": 4
+      },
+      {
+        "ranking_key": "channel_effectiveness",
+        "entity": "Recruitment Agency",
+        "dimension": null,
+        "metric": 55.5984555984556,
+        "secondary": 20.48,
+        "rank": 5
+      }
+    ]
+  },
+  "forecasts": {
+    "placements_monthly": [
+      {
+        "series_key": "placements_monthly",
+        "period": "2022-08-01",
+        "dimension": null,
+        "yhat": 183.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2022-09-01",
+        "dimension": null,
+        "yhat": 167.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2022-10-01",
+        "dimension": null,
+        "yhat": 161.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2022-11-01",
+        "dimension": null,
+        "yhat": 177.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2022-12-01",
+        "dimension": null,
+        "yhat": 181.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-01-01",
+        "dimension": null,
+        "yhat": 183.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-02-01",
+        "dimension": null,
+        "yhat": 149.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-03-01",
+        "dimension": null,
+        "yhat": 176.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-04-01",
+        "dimension": null,
+        "yhat": 174.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-08-01",
+        "dimension": null,
+        "yhat": 194.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-09-01",
+        "dimension": null,
+        "yhat": 179.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-10-01",
+        "dimension": null,
+        "yhat": 184.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-11-01",
+        "dimension": null,
+        "yhat": 194.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2023-12-01",
+        "dimension": null,
+        "yhat": 173.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-01-01",
+        "dimension": null,
+        "yhat": 160.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-02-01",
+        "dimension": null,
+        "yhat": 157.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-03-01",
+        "dimension": null,
+        "yhat": 180.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-04-01",
+        "dimension": null,
+        "yhat": 191.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-08-01",
+        "dimension": null,
+        "yhat": 180.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-09-01",
+        "dimension": null,
+        "yhat": 159.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-10-01",
+        "dimension": null,
+        "yhat": 192.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-11-01",
+        "dimension": null,
+        "yhat": 179.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2024-12-01",
+        "dimension": null,
+        "yhat": 195.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-01-01",
+        "dimension": null,
+        "yhat": 166.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-02-01",
+        "dimension": null,
+        "yhat": 165.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-03-01",
+        "dimension": null,
+        "yhat": 163.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-04-01",
+        "dimension": null,
+        "yhat": 187.0,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-08-15",
+        "dimension": null,
+        "yhat": 177.891329573907,
+        "yhat_lower": 153.515058978403,
+        "yhat_upper": 202.267600169411,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-09-15",
+        "dimension": null,
+        "yhat": 177.991451593435,
+        "yhat_lower": 153.615180997931,
+        "yhat_upper": 202.367722188938,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-10-15",
+        "dimension": null,
+        "yhat": 178.091573612962,
+        "yhat_lower": 153.715303017458,
+        "yhat_upper": 202.467844208466,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-11-15",
+        "dimension": null,
+        "yhat": 178.19169563249,
+        "yhat_lower": 153.815425036986,
+        "yhat_upper": 202.567966227994,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2025-12-15",
+        "dimension": null,
+        "yhat": 178.291817652018,
+        "yhat_lower": 153.915547056514,
+        "yhat_upper": 202.668088247521,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2026-01-15",
+        "dimension": null,
+        "yhat": 178.391939671545,
+        "yhat_lower": 154.015669076042,
+        "yhat_upper": 202.768210267049,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2026-02-15",
+        "dimension": null,
+        "yhat": 178.492061691073,
+        "yhat_lower": 154.115791095569,
+        "yhat_upper": 202.868332286577,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2026-03-15",
+        "dimension": null,
+        "yhat": 178.592183710601,
+        "yhat_lower": 154.215913115097,
+        "yhat_upper": 202.968454306105,
+        "is_forecast": true
+      },
+      {
+        "series_key": "placements_monthly",
+        "period": "2026-04-15",
+        "dimension": null,
+        "yhat": 178.692305730129,
+        "yhat_lower": 154.316035134625,
+        "yhat_upper": 203.068576325632,
+        "is_forecast": true
+      }
+    ],
+    "median_ctc_cycle": [
+      {
+        "series_key": "median_ctc_cycle",
+        "period": "2023-04-15",
+        "dimension": null,
+        "yhat": 18.47,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "median_ctc_cycle",
+        "period": "2024-04-15",
+        "dimension": null,
+        "yhat": 19.84,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "median_ctc_cycle",
+        "period": "2025-04-15",
+        "dimension": null,
+        "yhat": 21.225,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "median_ctc_cycle",
+        "period": "2026-04-15",
+        "dimension": null,
+        "yhat": 22.6,
+        "yhat_lower": 21.816,
+        "yhat_upper": 23.384,
+        "is_forecast": true
+      }
+    ],
+    "it_services_ctc": [
+      {
+        "series_key": "it_services_ctc",
+        "period": "2023-04-15",
+        "dimension": "IT Services",
+        "yhat": 10.57,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "it_services_ctc",
+        "period": "2024-04-15",
+        "dimension": "IT Services",
+        "yhat": 10.06,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "it_services_ctc",
+        "period": "2025-04-15",
+        "dimension": "IT Services",
+        "yhat": 9.76,
+        "yhat_lower": null,
+        "yhat_upper": null,
+        "is_forecast": false
+      },
+      {
+        "series_key": "it_services_ctc",
+        "period": "2026-04-15",
+        "dimension": "IT Services",
+        "yhat": 9.31999999999999,
+        "yhat_lower": 8.53599999999999,
+        "yhat_upper": 10.104,
+        "is_forecast": true
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "recommendation_key": 1,
+      "domain": "Executive",
+      "title": "Reduce structural reliance on IT Services placements",
+      "observation": "Median CTC in IT Services fell -7.7% from 2022-23 to 2024-25 (\u20b910.6\u2192\u20b99.8 LPA), yet the sector still absorbs 27% of all placements, the largest single share.",
+      "business_impact": "The institution's headline salary metrics are being dragged down by a high-volume, low-growth sector. Continued dependence caps median-CTC improvement regardless of gains elsewhere.",
+      "recommended_action": "Rebalance the recruiter mix toward Software Product, Finance and E-Commerce employers; set a target to bring IT Services below 20% of placements within two cycles and prioritise higher-CTC recruiters for on-campus slots.",
+      "priority": "High",
+      "confidence": 0.86,
+      "evidence": {
+        "ctc_last": 9.8,
+        "ctc_first": 10.6,
+        "it_services_share_pct": 26.9,
+        "it_services_ctc_change_pct": -7.7
+      }
+    },
+    {
+      "recommendation_key": 4,
+      "domain": "HR",
+      "title": "Prioritise cloud, ML and system-design upskilling",
+      "observation": "Skills such as System Design now command a +8% CTC premium over the median and appear in a rising share of offers (+8.7 points since 2022-23).",
+      "business_impact": "Demand and pay are concentrating in a small set of high-value skills. Cohorts without them are increasingly funnelled into lower-CTC roles.",
+      "recommended_action": "Embed Machine Learning, AWS, System Design into pre-placement training and make at least one cloud/ML certification a graduation-readiness target.",
+      "priority": "High",
+      "confidence": 0.84,
+      "evidence": {
+        "skills": {
+          "AWS": {
+            "share_last": 29.1,
+            "premium_pct": 2.0,
+            "share_change": 11.8
+          },
+          "Kubernetes": {
+            "share_last": 28.2,
+            "premium_pct": 2.5,
+            "share_change": 7.9
+          },
+          "System Design": {
+            "share_last": 28.8,
+            "premium_pct": 7.8,
+            "share_change": 8.7
+          },
+          "Machine Learning": {
+            "share_last": 26.6,
+            "premium_pct": 7.7,
+            "share_change": 8.6
+          }
+        },
+        "overall_median_ctc": 21.2
+      }
+    },
+    {
+      "recommendation_key": 2,
+      "domain": "Executive",
+      "title": "Targeted intervention for the South region",
+      "observation": "The South region places 55.7% of students versus a 61.0% institution average, a 5.3 point gap, the widest of any region.",
+      "business_impact": "Roughly 5 in every 100 eligible students in South miss placement relative to peer regions, concentrating unplaced risk and weakening regional employer relationships.",
+      "recommended_action": "Run a focused employer-outreach and mock-interview program in South; assign a dedicated placement coordinator and review results next cycle before further investment.",
+      "priority": "Medium",
+      "confidence": 0.82,
+      "evidence": {
+        "avg_rate": 61.0,
+        "gap_points": 5.3,
+        "region_rate": 55.7,
+        "weak_region": "South"
+      }
+    },
+    {
+      "recommendation_key": 3,
+      "domain": "HR",
+      "title": "Shift sourcing toward the highest-yield hiring channels",
+      "observation": "'On-Campus' converts 67.9% of candidates versus 55.6% for 'Recruitment Agency', while 'Referral' produces the highest median CTC (\u20b923.6 LPA).",
+      "business_impact": "Channel choice materially changes both placement probability and pay. Effort spread evenly across channels wastes coordinator time on the lowest-converting sources.",
+      "recommended_action": "Concentrate coordinator effort on 'On-Campus' for volume and build the 'Referral' channel for salary outcomes; de-prioritise 'Recruitment Agency' unless conversion improves.",
+      "priority": "Medium",
+      "confidence": 0.8,
+      "evidence": {
+        "best_channel": "On-Campus",
+        "worst_channel": "Recruitment Agency",
+        "best_channel_rate": 67.9,
+        "worst_channel_rate": 55.6,
+        "highest_pay_channel": "Referral"
+      }
+    },
+    {
+      "recommendation_key": 5,
+      "domain": "Operations",
+      "title": "Scale the pre-placement internship pipeline",
+      "observation": "Students with a prior internship place at 63.3% versus 59.4% without one, a 3.9 point difference (Welch t-test p=0.043).",
+      "business_impact": "Internship exposure is one of the strongest controllable predictors of placement. Expanding it lifts the whole cohort's outcomes, not just top performers.",
+      "recommended_action": "Set an internship-conversion target of 60%+ of the cohort and formalise employer internship partnerships in the two cycles before final placement.",
+      "priority": "Medium",
+      "confidence": 0.956964614924581,
+      "evidence": {
+        "t_stat": 2.024473232733938,
+        "p_value": 0.04303538507541904,
+        "rate_with_internship": 63.3,
+        "rate_without_internship": 59.4
+      }
+    },
+    {
+      "recommendation_key": 6,
+      "domain": "Finance",
+      "title": "Reallocate placement investment across university tiers",
+      "observation": "Tier-1 institutes place 65.0% of students at \u20b932.6 LPA median, while Tier-3 places 56.5% at \u20b918.1 LPA.",
+      "business_impact": "Marginal placement spend yields very different returns by tier. Uniform budgeting under-serves where uplift is achievable and over-serves saturated segments.",
+      "recommended_action": "Direct incremental training budget to Tier-2/Tier-3 cohorts where the conversion gap is largest, and hold Tier-1 spend flat while protecting its premium recruiter relationships.",
+      "priority": "Medium",
+      "confidence": 0.78,
+      "evidence": {
+        "tier1_rate": 65.0,
+        "tier3_rate": 56.5,
+        "tier1_median_ctc": 32.6,
+        "tier3_median_ctc": 18.1
+      }
+    }
+  ],
+  "scenarioBaseline": {
+    "placementRate": 61.0,
+    "medianCtc": 21.225,
+    "cohort": 2600,
+    "internCoverage": 41.19230769230769,
+    "channelShare": 60.03846153846154,
+    "weakRegion": "South",
+    "weakRegionRate": 55.6851311953353
+  }
+}
