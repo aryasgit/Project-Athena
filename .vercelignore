@@ -1,0 +1,6 @@
+_archive
+node_modules
+.next
+web/.next
+web/out
+packages/engine/dist
