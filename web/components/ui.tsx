@@ -37,13 +37,13 @@ export function PageHeader({ plate, label, title, lede }: {
       </div>
       <div className="rule mb-5" />
       <h1
-        className="max-w-[20ch] font-bold leading-[1.03] tracking-[-0.025em] text-ink"
-        style={{ fontSize: "clamp(1.9rem,4vw,2.7rem)" }}
+        className="max-w-[16ch] font-extrabold leading-[0.98] tracking-[-0.04em] text-ink"
+        style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.6rem,6vw,4.6rem)" }}
       >
         {title}
       </h1>
       {lede && (
-        <p className="mt-3.5 max-w-[62ch] text-[0.98rem] leading-relaxed text-muted">{lede}</p>
+        <p className="mt-4 max-w-[60ch] text-[0.98rem] leading-relaxed text-muted">{lede}</p>
       )}
     </header>
   );
@@ -64,11 +64,11 @@ export function PlateLabel({ plate, label }: { plate: string; label: string }) {
 export function CardTitle({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="mb-5 flex items-baseline justify-between gap-3">
-      <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink">
-        {title}
+      <h2 className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.02em] text-ink">
+        <span className="text-str">{"// "}</span>{title}
       </h2>
       {hint && (
-        <span className="text-[0.64rem] uppercase tracking-[0.1em] text-muted">{hint}</span>
+        <span className="font-mono text-[0.62rem] uppercase tracking-[0.02em] text-faint">{hint}</span>
       )}
     </div>
   );
@@ -82,7 +82,7 @@ export function DeltaTag({ delta, unit }: { delta: number | null; unit?: string 
   const value = Math.abs(delta).toFixed(unit === "%" ? 1 : delta % 1 === 0 ? 0 : 1);
   return (
     <span
-      className="inline-flex items-center gap-1 text-[0.64rem] font-semibold tabular"
+      className="inline-flex items-center gap-1 font-mono text-[0.62rem] font-medium tabular"
       style={{ color: positive ? "var(--color-positive)" : "var(--color-negative)" }}
     >
       <span aria-hidden>{positive ? "▲" : "▼"}</span>
@@ -122,7 +122,7 @@ export function ModuleNotice({ moduleName }: { moduleName: string }) {
 
 export function DomainTag({ domain }: { domain: string }) {
   return (
-    <span className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-crimson">
+    <span className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.02em] text-fn">
       {domain}
     </span>
   );

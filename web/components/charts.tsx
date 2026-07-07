@@ -9,11 +9,13 @@ const H = 236;
 const PAD = { top: 18, right: 16, bottom: 32, left: 46 };
 
 const CRIMSON = "var(--color-crimson)";
+const NUM = "var(--color-num)";
+const FN = "var(--color-fn)";
 const HAIR = "var(--color-hair)";
 const INK = "var(--color-ink)";
 const PAPER = "var(--color-paper)";
 const MUTED = "var(--color-muted)";
-const AXIS = { fontFamily: "var(--font-sans)" } as const;
+const AXIS = { fontFamily: "var(--font-mono)", fontSize: 10 } as const;
 
 function scale(v: number, min: number, max: number, a: number, b: number) {
   if (max === min) return (a + b) / 2;
@@ -101,13 +103,13 @@ export function ForecastChart({ data, unit = "", format = (n: number) => n.toFix
     <Frame>
       <Grid ticks={niceTicks(min, max, 4)} y={y} format={format} />
       {/* flat, low-alpha crimson interval: data ink, not a gradient surface */}
-      {bandPath && <path d={bandPath} fill={CRIMSON} fillOpacity="0.08" stroke="none" />}
+      {bandPath && <path d={bandPath} fill={NUM} fillOpacity="0.09" stroke="none" />}
       <path d={solidPath} fill="none" stroke={CRIMSON} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-      <path d={dashPath} fill="none" stroke={CRIMSON} strokeWidth="1.5" strokeDasharray="5 4" strokeLinecap="round" />
+      <path d={dashPath} fill="none" stroke={NUM} strokeWidth="1.5" strokeDasharray="4 4" strokeLinecap="round" />
       {data.map((d, i) => (
         <g key={i}>
           <circle cx={x(i)} cy={y(d.value)} r="3"
-            fill={d.forecast ? CRIMSON : PAPER} stroke={CRIMSON} strokeWidth="1.5" />
+            fill={d.forecast ? NUM : PAPER} stroke={d.forecast ? NUM : CRIMSON} strokeWidth="1.5" />
           <text x={x(i)} y={H - PAD.bottom + 17} textAnchor="middle" style={AXIS}
             fontSize="9.5" fill={MUTED}>{d.label}</text>
           <title>{d.label}: {format(d.value)}{unit}{d.forecast ? " (projected)" : ""}</title>
@@ -123,7 +125,7 @@ export function BarList({ data, unit = "", format = (n: number) => n.toFixed(1),
 }) {
   if (data.length === 0) return <Empty />;
   const max = Math.max(...data.map((d) => Math.abs(d.value)));
-  const fill = tone === "ink" ? INK : CRIMSON;
+  const fill = tone === "ink" ? FN : CRIMSON;
   return (
     <div className="flex flex-col">
       {data.map((d, i) => (

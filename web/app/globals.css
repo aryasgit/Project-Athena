@@ -1,33 +1,50 @@
 @import "tailwindcss";
 
 /* ============================================================
-   ATHENA TERMINAL  ·  black canvas · Inter · green up / red down
-   A trading-console aesthetic: dense, hairlined, monospace-grade
-   tabular numerals, signal colour reserved for direction.
+   ATHENA · IDE / WARPLAN aesthetic
+   Near-black editor canvas, Inter Tight for loud display type,
+   JetBrains Mono for every label and datum, a Tokyo-Night syntax
+   palette used boldly. Quirky, loud, precise.
    ============================================================ */
 
 @theme {
-  --color-paper: #000000;          /* the canvas: completely black */
-  --color-panel: #0b0d11;          /* lifted surfaces (plates, figures) */
-  --color-panel-2: #10131a;        /* inputs, hover */
-  --color-ink: #e8eaed;            /* primary text */
-  --color-muted: #808894;          /* secondary text, labels */
-  --color-hair: #1f242d;           /* structure */
-  --color-hair-soft: #161a21;      /* sub-rules */
-  --color-crimson: #24d38a;        /* the accent: terminal green */
-  --color-positive: #24d38a;       /* up */
-  --color-negative: #ff495f;       /* down */
-  --color-verified: #24d38a;
-  --color-on-verified: #04170f;
-  --color-owner: #4c8dff;
-  --color-pending: #f5b52e;
-  --color-danger: #ff495f;
-  --color-gold: #f5b52e;
+  --color-paper: #0a0a0a;          /* the editor canvas */
+  --color-panel: #101010;          /* panels */
+  --color-panel-2: #151515;        /* inputs, hover */
+  --color-ide: #0d0d0d;
+  --color-ink: #f4f4f4;
+  --color-ink-2: #cfcfcf;
+  --color-muted: #8a8a8a;
+  --color-faint: #5a5a5a;
+  --color-hair: #1c1c1c;
+  --color-hair-soft: #161616;
+  --color-line-2: #2a2a2a;
+
+  /* syntax accents (Tokyo Night) */
+  --color-kw: #e0709a;             /* pink   */
+  --color-fn: #7aa2f7;             /* blue   */
+  --color-str: #9ece6a;            /* green  */
+  --color-num: #ff9e64;            /* orange */
+  --color-cyan: #7dcfff;
+  --color-amber: #e0af68;
+  --color-teal: #5fd7c5;
+
+  /* semantic mapping */
+  --color-crimson: #9ece6a;        /* primary accent = string green */
+  --color-positive: #3dd07a;       /* up */
+  --color-negative: #e07070;       /* down */
+  --color-verified: #3dd07a;
+  --color-on-verified: #05160c;
+  --color-owner: #7aa2f7;
+  --color-pending: #e0af68;
+  --color-danger: #e07070;
+  --color-gold: #e0af68;
 
   --font-sans: "Inter", system-ui, sans-serif;
-  --font-serif: "Inter", system-ui, sans-serif;
-  --font-display: "Inter", system-ui, sans-serif;
-  --font-wordmark: "Inter", system-ui, sans-serif;
+  --font-display: "Inter Tight", "Inter", sans-serif;
+  --font-serif: "Inter Tight", "Inter", sans-serif;
+  --font-wordmark: "Inter Tight", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
@@ -35,92 +52,65 @@
   color-scheme: dark;
 }
 
-* {
-  box-sizing: border-box;
-}
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  letter-spacing: -0.006em;
 }
 
 em {
   font-style: normal;
-  color: var(--color-crimson);
+  color: var(--color-num);
   font-weight: 600;
 }
 
-::selection {
-  background: color-mix(in srgb, var(--color-crimson) 30%, transparent);
-  color: var(--color-ink);
-}
+::selection { background: color-mix(in srgb, var(--color-str) 28%, transparent); color: var(--color-ink); }
+* { scrollbar-width: thin; scrollbar-color: var(--color-line-2) transparent; }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-hair) transparent;
-}
+.tabular { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); }
+.display { font-family: var(--font-display); }
 
-.tabular {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum", "cv01";
-}
-
-/* --- the accent rule ------------------------------------------------ */
+/* --- accent rule ---------------------------------------------------- */
 .rule {
-  width: 40px;
-  height: 2px;
+  width: 38px;
+  height: 3px;
   background: var(--color-crimson);
   transform-origin: left;
 }
 
-/* --- eyebrow / section tag ------------------------------------------ */
+/* --- eyebrow / section tag (mono) ----------------------------------- */
 .eyebrow {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
-.eyebrow .pl {
-  font-weight: 600;
-  font-size: 0.66rem;
-  color: var(--color-crimson);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.eyebrow .ln {
-  flex: 1;
-  height: 1px;
-  background: var(--color-hair);
-}
+.eyebrow .pl { color: var(--color-crimson); font-weight: 600; }
+.eyebrow .ln { flex: 1; height: 1px; background: var(--color-hair); }
 
-/* --- panels (plates) ------------------------------------------------ */
+/* --- panels --------------------------------------------------------- */
 .plate {
   position: relative;
   border: 1px solid var(--color-hair);
   background: var(--color-panel);
   transition: border-color 0.2s var(--ease);
 }
-.plate:hover {
-  border-color: color-mix(in srgb, var(--color-crimson) 40%, var(--color-hair));
-}
-/* corner ticks are noise in the terminal look: hide them */
-.tick {
-  display: none;
-}
+.plate:hover { border-color: var(--color-line-2); }
+.tick { display: none; }
 
-/* --- figures (KPI ticker cells) ------------------------------------- */
+/* --- figures (KPI cells): Inter Tight numbers, mono labels ---------- */
 .figs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -128,9 +118,7 @@ em {
   background: var(--color-panel);
 }
 @media (min-width: 768px) {
-  .figs {
-    grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
-  }
+  .figs { grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); }
 }
 .fig {
   padding: 15px 18px;
@@ -139,29 +127,32 @@ em {
 }
 .fig b {
   display: block;
-  font-weight: 600;
-  font-size: 1.85rem;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.95rem;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 .fig .lab {
+  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
 
-/* --- stamps (status pills) ------------------------------------------ */
+/* --- stamps (mono pills) -------------------------------------------- */
 .stamp {
   display: inline-flex;
   align-items: center;
-  font-weight: 600;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border: 1px solid;
 }
 .stamp.green { color: var(--color-on-verified); background: var(--color-verified); border-color: var(--color-verified); }
@@ -174,14 +165,10 @@ em {
 /* --- ledger entries ------------------------------------------------- */
 .entry { border-bottom: 1px solid var(--color-hair); }
 .entry:first-of-type { border-top: 1px solid var(--color-hair); }
-.entry .name i {
-  font-style: normal;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s var(--ease);
-}
+.entry .name i { font-style: normal; border-bottom: 1px solid transparent; transition: border-color 0.2s var(--ease); }
 .entry:hover .name i { border-color: var(--color-crimson); }
 
-/* --- buttons -------------------------------------------------------- */
+/* --- buttons (mono) ------------------------------------------------- */
 .gbtn {
   display: inline-flex;
   align-items: center;
@@ -189,54 +176,41 @@ em {
   border: 1px solid var(--color-hair);
   background: var(--color-panel);
   color: var(--color-ink);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 0.72em 1.25em;
+  padding: 0.7em 1.15em;
   transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
 }
 .gbtn:hover { border-color: var(--color-crimson); color: var(--color-crimson); }
 
-/* --- masthead nav --------------------------------------------------- */
+/* --- masthead nav (mono) -------------------------------------------- */
 .navlink {
-  font-weight: 600;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
   color: var(--color-muted);
   padding-bottom: 3px;
   border-bottom: 1px solid transparent;
   transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
 }
 .navlink:hover { color: var(--color-ink); }
-.navlink[data-active="true"] { color: var(--color-ink); border-bottom-color: var(--color-crimson); }
+.navlink[data-active="true"] { color: var(--color-str); border-bottom-color: var(--color-str); }
 
-/* --- levers (range inputs) ------------------------------------------ */
+/* --- levers --------------------------------------------------------- */
 .lever {
-  width: 100%;
-  height: 2px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: var(--color-hair);
-  outline: none;
-  cursor: pointer;
+  width: 100%; height: 2px; -webkit-appearance: none; appearance: none;
+  background: var(--color-line-2); outline: none; cursor: pointer;
 }
 .lever::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  background: var(--color-crimson);
-  border: none;
-  border-radius: 50%;
+  -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
+  background: var(--color-crimson); border: none; border-radius: 2px;
   transition: transform 0.15s var(--ease);
 }
 .lever::-webkit-slider-thumb:hover { transform: scale(1.2); }
-.lever::-moz-range-thumb {
-  width: 14px; height: 14px; background: var(--color-crimson); border: none; border-radius: 50%;
-}
+.lever::-moz-range-thumb { width: 14px; height: 14px; background: var(--color-crimson); border: none; border-radius: 2px; }
 
-@media (prefers-reduced-motion: reduce) {
-  body { transition: none; }
-}
+@media (prefers-reduced-motion: reduce) { body { transition: none; } }
