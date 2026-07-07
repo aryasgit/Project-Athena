@@ -236,4 +236,11 @@ em {
 .lever::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .lever::-moz-range-thumb { width: 14px; height: 14px; background: var(--color-crimson); border: none; border-radius: 2px; }
 
-@media (prefers-reduced-motion: reduce) { body { transition: none; } }
+/* --- ticker marquee ------------------------------------------------- */
+.ticker-track { animation: ticker 48s linear infinite; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  body { transition: none; }
+  .ticker-track { animation: none; }
+}

@@ -8,6 +8,9 @@ import { Figures } from "@/components/KpiCard";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { LineChart, ForecastChart, BarList } from "@/components/charts";
 import { Plate, CardTitle, PageHeader, PlateLabel } from "@/components/ui";
+import { Ticker } from "@/components/Ticker";
+import { CodePanel } from "@/components/CodePanel";
+import { NorthStar } from "@/components/NorthStar";
 
 export const dynamic = "force-dynamic";
 
@@ -62,14 +65,25 @@ export default async function OverviewPage() {
   const channelData = channels.map((c) => ({ label: c.entity, value: c.metric }));
   const panelData = [tierData, regionData, channelData];
 
+  const tickerItems = [
+    ...momentum.map((m) => m.label.toLowerCase().replace(/\s+/g, ".")),
+    ...regionData.map((r) => r.label.toLowerCase()),
+    ...channelData.map((c) => c.label.toLowerCase().replace(/\s+/g, ".")),
+    "expected.value", "decision.filter", "confidence", "reallocate",
+  ];
+
   return (
     <>
       <PageHeader plate={meta.header.plate} label={meta.header.label}
         title={headerTitle(meta.header)} tail={meta.header.tail} lede={meta.header.lede} />
 
+      <div className="mb-10">
+        <Ticker items={tickerItems} />
+      </div>
+
       <Figures kpis={kpis} />
 
-      <PlateLabel plate="Plate II" label="Forward projections" />
+      <PlateLabel plate="02" label="Forward projections" />
       <div className="grid gap-5 lg:grid-cols-2">
         <Plate className="p-6">
           <CardTitle title={meta.forecastPrimary.title} hint={meta.forecastPrimary.hint} />
@@ -81,7 +95,7 @@ export default async function OverviewPage() {
         </Plate>
       </div>
 
-      <PlateLabel plate="Plate III" label="Where value concentrates" />
+      <PlateLabel plate="03" label="Where value concentrates" />
       <div className="grid gap-5 lg:grid-cols-2">
         <Plate className="p-6">
           <CardTitle title={meta.line.title} hint={meta.line.hint} />
@@ -105,7 +119,19 @@ export default async function OverviewPage() {
         ))}
       </div>
 
-      <PlateLabel plate="Plate IV" label="The decisions that follow" />
+      <NorthStar />
+
+      <PlateLabel plate="04" label="The decisions that follow" />
+      <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+        <div>
+          <p className="max-w-[42ch] text-[0.95rem] leading-relaxed text-muted">
+            Athena never stops at a chart. Every finding runs through one decision filter:
+            is the expected value positive, is the confidence high enough, is it worth
+            pursuing. Only then does it become a recommendation.
+          </p>
+        </div>
+        <CodePanel />
+      </div>
       <div className="grid gap-5">
         {recs.slice(0, 2).map((r) => <RecommendationCard key={r.recommendation_key} rec={r} />)}
       </div>

@@ -11,7 +11,7 @@ export function StatusBar() {
   }, []);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t border-hair bg-ide px-4 py-1.5 font-mono text-[0.62rem] text-muted md:pl-[228px]">
+    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t border-hair bg-ide px-4 py-1.5 font-mono text-[0.62rem] text-muted md:px-10">
       <span className="flex items-center gap-1.5 text-str">
         <span className="h-1.5 w-1.5 rounded-full bg-positive" />READY
       </span>
