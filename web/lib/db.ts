@@ -18,10 +18,14 @@ function create() {
   // Require SSL for managed/hosted databases (Supabase, sslmode=require),
   // but not for a local Postgres or a unix socket.
   const needsSsl = /supabase|sslmode=require/.test(url);
+  // Supabase's transaction pooler (pgbouncer) does not support prepared
+  // statements, so disable them when talking to a pooler.
+  const isPooler = /pooler\.supabase|pgbouncer/.test(url);
   return postgres(url, {
     max: 5,
     idle_timeout: 20,
     ssl: needsSsl ? "require" : false,
+    prepare: isPooler ? false : undefined,
   });
 }
 
