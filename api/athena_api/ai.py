@@ -16,7 +16,7 @@ DEFAULT_MODELS = {
     "openrouter": "meta-llama/llama-3.1-70b-instruct",
     "openai": "gpt-4o-mini",
     "anthropic": "claude-3-5-haiku-latest",
-    "gemini": "gemini-1.5-flash",
+    "gemini": "gemini-2.5-flash",
 }
 
 # Personas: consultants that reason over structured JSON and cite figures.
@@ -125,7 +125,7 @@ def _gemini(client, model, system, prompt, temperature):
     r = client.post(url, json={
         "systemInstruction": {"parts": [{"text": system}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": temperature},
+        "generationConfig": {"temperature": temperature, "thinkingConfig": {"thinkingBudget": 0}},
     })
     r.raise_for_status()
     return (r.json()["candidates"][0]["content"]["parts"][0]["text"] or "").strip() or None

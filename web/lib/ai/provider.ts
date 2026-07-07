@@ -25,7 +25,7 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   openrouter: "meta-llama/llama-3.1-70b-instruct",
   openai: "gpt-4o-mini",
   anthropic: "claude-3-5-haiku-latest",
-  gemini: "gemini-1.5-flash",
+  gemini: "gemini-2.5-flash",
   none: "",
 };
 
@@ -142,7 +142,9 @@ async function callGemini(model: string, a: GenerateArgs, signal: AbortSignal) {
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: a.system }] },
       contents: [{ role: "user", parts: [{ text: a.prompt }] }],
-      generationConfig: { temperature: a.temperature ?? 0.3 },
+      // Gemini 2.5 Flash is a thinking model; disable thinking so tokens go to
+      // the answer, not internal reasoning (faster and cheaper for this use).
+      generationConfig: { temperature: a.temperature ?? 0.3, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
   if (!res.ok) throw new Error(`gemini ${res.status}`);
