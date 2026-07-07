@@ -179,12 +179,44 @@ Already implemented and provider-agnostic (`web/lib/ai/provider.ts`):
   Analyst, Forecast Analyst, Risk Analyst, Report Writer. Each reasons over the
   structured JSON and is instructed to cite figures and never invent them.
 
-## Build order (proposed)
+## What is built
 
-1. The thin FastAPI surface over the `athena` CLI (the contract above).
-2. Sub-workflow templates T1 to T5 in n8n, tested individually.
-3. Workflow 1 (on-demand), then Workflow 3 (scheduled), then Workflow 2.
-4. Natural-language query endpoint (retrieve structured results first, then
-   reason), wired as its own node and an in-app interface.
+The design above is now implemented and wired together.
 
-Nothing above is built as a workflow yet. This is the design to review first.
+- **The API** (`api/athena_api/`): FastAPI exposing `/health`, `/build`,
+  `/analytics`, `/brief`, `/ask`. It reuses the `athena` pipeline for builds and
+  reads the result tables for everything else. The AI provider layer
+  (`api/athena_api/ai.py`) mirrors the web one: Ollama primary, fail-soft to the
+  deterministic path.
+- **Natural-language query** (`api/athena_api/nl.py`): retrieves structured
+  evidence first, then reasons, and always cites figures. Exposed at `/ask` and
+  surfaced in the dashboard at `/ask` through a server proxy
+  (`web/app/api/ask/route.ts`).
+- **The workflows** (`orchestration/n8n/*.json`): importable n8n workflows for
+  on-demand analysis, the monthly executive brief, and the daily KPI review.
+  They call the API endpoints above. The email and Slack nodes are left as
+  placeholders to wire to your own credentials.
+- **The stack** (`docker-compose.yml`): Postgres, the API, n8n, and the web app,
+  with an optional Ollama profile.
+
+## Running the full stack
+
+```bash
+docker compose up -d                 # postgres + api + n8n + web
+docker compose --profile ai up -d    # also start local Ollama
+
+# seed the warehouse once
+curl -X POST localhost:8099/build -H 'content-type: application/json' \
+     -d '{"regenerate": true}'
+```
+
+Then: dashboard `localhost:3000`, n8n `localhost:5678`, API `localhost:8099`.
+In n8n, import the files under `orchestration/n8n/`. To turn the AI layer on,
+set `AI_PROVIDER` (and any key) in the environment; with it unset, every surface
+still works deterministically.
+
+## Remaining
+
+- Domain and dataset selection with CSV upload (Layer 1).
+- Guided consulting mode (Layer 8).
+- Wiring the notification nodes (email, Slack) to real credentials.

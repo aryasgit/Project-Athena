@@ -1,0 +1,6 @@
+# The API reuses the installed `athena` pipeline package for ingest/build.
+# Install the pipeline first:  pip install -e ../pipeline
+fastapi>=0.115
+uvicorn[standard]>=0.30
+httpx>=0.27
+pydantic>=2.7

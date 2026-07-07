@@ -1,0 +1,84 @@
+{
+  "name": "Athena · On-Demand Analysis",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "description": "POST a trigger to the webhook: Athena runs the deterministic build, then generates the executive brief. AI enhances the brief only if a provider is configured." },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "athena/analyze",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "athena-analyze"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8099/build",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"module\": \"placement\", \"regenerate\": false }",
+        "options": { "timeout": 120000 }
+      },
+      "id": "build",
+      "name": "Run Deterministic Build",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8099/brief",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"module\": \"placement\" }",
+        "options": { "timeout": 60000 }
+      },
+      "id": "brief",
+      "name": "Generate Executive Brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "engine", "value": "={{ $json.provenance.engine }}", "type": "string" },
+            { "id": "a2", "name": "summary", "value": "={{ $json.summary }}", "type": "string" },
+            { "id": "a3", "name": "next_actions", "value": "={{ $json.next_actions.join('\\n') }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format",
+      "name": "Shape Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1080, 300]
+    },
+    {
+      "parameters": {},
+      "id": "notify",
+      "name": "Notify (wire Email/Slack here)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1360, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": { "main": [[{ "node": "Run Deterministic Build", "type": "main", "index": 0 }]] },
+    "Run Deterministic Build": { "main": [[{ "node": "Generate Executive Brief", "type": "main", "index": 0 }]] },
+    "Generate Executive Brief": { "main": [[{ "node": "Shape Notification", "type": "main", "index": 0 }]] },
+    "Shape Notification": { "main": [[{ "node": "Notify (wire Email/Slack here)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}

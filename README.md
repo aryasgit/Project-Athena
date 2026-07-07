@@ -1,9 +1,9 @@
-# Project Athena — Enterprise Decision Intelligence Platform
+# Project Athena: Enterprise Decision Intelligence Platform
 
 Athena turns fragmented organizational data into **strategic recommendations**, not just charts.
 Most BI tools stop at *"what happened?"* Athena is built to answer *"what should we do next?"*
 
-It is the third and culminating system in the **Decision Intelligence Initiative** — a
+It is the third and culminating system in the **Decision Intelligence Initiative**, a
 portfolio exploring how complex decisions are made, executed, and optimized across markets
 and enterprises.
 
@@ -19,7 +19,7 @@ and enterprises.
 
 The first vertical slice runs end-to-end on a **Placement Intelligence** dataset (hiring
 trends, salary analytics, skill demand, university comparisons). The analytics engine is
-dataset-agnostic — swapping in retail, HR, or customer data reuses the same pipeline.
+dataset-agnostic. Swapping in retail, HR, or customer data reuses the same pipeline.
 
 ```
 Raw data → ETL → Postgres star schema → Analytics → Forecasting → Recommendations → Dashboard
@@ -31,12 +31,26 @@ Every dashboard view ends with the consulting triad:
 
 ## Architecture
 
-- **`pipeline/`** — Python engine: generate → ingest (ETL) → warehouse (star schema) →
-  analytics → forecast → recommend. Writes computed KPIs and recommendations back into
-  Postgres result tables.
-- **Postgres / Supabase** — the warehouse and the computed-results store. Portable: point
-  `DATABASE_URL` at a local Postgres or a Supabase project.
-- **`web/`** — Next.js executive dashboard (Vercel-deployable) reading directly from Postgres.
+Three independent layers. The ordering is a law: AI never computes a number, it
+only interprets the deterministic output, and the platform works fully with
+every AI provider off.
+
+- **`pipeline/`**: deterministic analytics (Python). generate → ingest (ETL) →
+  star-schema warehouse → analytics → forecast → recommend. Writes computed KPIs
+  and recommendations into Postgres result tables. This is the source of truth.
+- **`api/`**: the orchestration contract (FastAPI): `/build`, `/analytics`,
+  `/brief`, `/ask`. Reuses the pipeline and reads the warehouse. Hosts the
+  provider-agnostic AI layer (Ollama primary; OpenRouter / OpenAI / Anthropic /
+  Gemini) and the natural-language query engine (evidence-first, cited).
+- **`orchestration/n8n/`**: importable n8n workflows (on-demand analysis,
+  monthly brief, daily KPI review) that call the API. See
+  [`docs/ai-orchestration.md`](docs/ai-orchestration.md).
+- **Postgres / Supabase**: the warehouse and computed-results store. Portable.
+- **`web/`**: Next.js dashboard (Vercel-deployable). Reads Postgres directly for
+  the analytics views and the deterministic Executive Brief; interactive
+  What-If **Simulator** and natural-language **Ask** console on top.
+
+Run the whole stack locally with `docker compose up -d` (see the orchestration doc).
 
 ## Stack
 
@@ -67,5 +81,5 @@ npm run dev
 
 ## Documentation
 
-- [`docs/architecture.md`](docs/architecture.md) — pipeline and data model
-- [`docs/decision-framework.md`](docs/decision-framework.md) — how observations become recommendations
+- [`docs/architecture.md`](docs/architecture.md): pipeline and data model
+- [`docs/decision-framework.md`](docs/decision-framework.md): how observations become recommendations

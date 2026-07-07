@@ -1,0 +1,59 @@
+{
+  "name": "Athena · Daily KPI Review",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "description": "Each morning, read the analytics and ask the AI layer which KPIs need attention. The question is answered over retrieved structured evidence, never free-floating. Falls back to a deterministic answer if no provider is set." },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 7 * * 1-5" }] }
+      },
+      "id": "cron",
+      "name": "Weekday Morning",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://api:8099/analytics?module=placement",
+        "options": { "timeout": 30000 }
+      },
+      "id": "analytics",
+      "name": "Read Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8099/ask",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"question\": \"Which KPIs require immediate attention this cycle and why?\", \"persona\": \"risk_analyst\" }",
+        "options": { "timeout": 60000 }
+      },
+      "id": "ask",
+      "name": "Ask: what needs attention",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {},
+      "id": "notify",
+      "name": "Post to Slack (wire channel here)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1080, 300]
+    }
+  ],
+  "connections": {
+    "Weekday Morning": { "main": [[{ "node": "Read Analytics", "type": "main", "index": 0 }]] },
+    "Read Analytics": { "main": [[{ "node": "Ask: what needs attention", "type": "main", "index": 0 }]] },
+    "Ask: what needs attention": { "main": [[{ "node": "Post to Slack (wire channel here)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}

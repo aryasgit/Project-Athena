@@ -1,0 +1,83 @@
+# The full Athena stack, wired together.
+#
+#   docker compose up -d                 # postgres + api + n8n + web
+#   docker compose --profile ai up -d    # also start local Ollama
+#
+# First run, seed the warehouse:
+#   curl -X POST localhost:8099/build -H 'content-type: application/json' \
+#        -d '{"regenerate": true}'
+#
+# Then: dashboard http://localhost:3000 · n8n http://localhost:5678 · api http://localhost:8099
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: athena
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d athena"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/athena
+      ATHENA_MODULE: placement
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_MODEL: ${AI_MODEL:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports: ["8099:8099"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      N8N_RUNNERS_ENABLED: "true"
+      GENERIC_TIMEZONE: Asia/Kolkata
+    ports: ["5678:5678"]
+    volumes:
+      - "n8ndata:/home/node/.n8n"
+      - "./orchestration/n8n:/workflows:ro"
+    depends_on:
+      - api
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/athena
+      NEXT_PUBLIC_MODULE: placement
+      ATHENA_API_URL: http://api:8099
+    ports: ["3000:3000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    ports: ["11434:11434"]
+    volumes: ["ollama:/root/.ollama"]
+
+volumes:
+  pgdata:
+  n8ndata:
+  ollama:

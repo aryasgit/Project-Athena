@@ -1,0 +1,66 @@
+{
+  "name": "Athena · Monthly Executive Brief",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "description": "On the 1st at 08:00, refresh the warehouse, generate the executive brief, and route it for distribution. Reuses the same deterministic build and brief endpoints as the on-demand flow." },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 8 1 * *" }] }
+      },
+      "id": "cron",
+      "name": "Monthly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8099/build",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"module\": \"placement\", \"regenerate\": false }",
+        "options": { "timeout": 120000 }
+      },
+      "id": "build",
+      "name": "Refresh Warehouse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8099/brief",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"module\": \"placement\" }",
+        "options": { "timeout": 60000 }
+      },
+      "id": "brief",
+      "name": "Generate Executive Brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "subject": "=Athena Executive Brief · Cycle {{ $json.cycle }}",
+        "html": "=<h2>Executive Summary</h2><p>{{ $json.summary }}</p><h3>Next actions</h3><ul>{{ $json.next_actions.map(a => '<li>' + a + '</li>').join('') }}</ul><p><em>Engine: {{ $json.provenance.engine }}</em></p>",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email Leadership (set credentials)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1080, 300]
+    }
+  ],
+  "connections": {
+    "Monthly Schedule": { "main": [[{ "node": "Refresh Warehouse", "type": "main", "index": 0 }]] },
+    "Refresh Warehouse": { "main": [[{ "node": "Generate Executive Brief", "type": "main", "index": 0 }]] },
+    "Generate Executive Brief": { "main": [[{ "node": "Email Leadership (set credentials)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}
