@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
+  { href: "/start", label: "Start" },
   { href: "/", label: "Overview" },
-  { href: "/skills", label: "Skills" },
   { href: "/simulator", label: "Simulator" },
+  { href: "/consulting", label: "Guided" },
   { href: "/ask", label: "Ask" },
   { href: "/brief", label: "Brief" },
   { href: "/recommendations", label: "Decisions" },
