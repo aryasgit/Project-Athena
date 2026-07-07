@@ -103,6 +103,23 @@ export function PriorityStamp({ priority }: { priority: string }) {
   return <span className={`stamp ${PRIORITY_CLASS[priority] ?? "grey"}`}>{priority} priority</span>;
 }
 
+export function ModuleNotice({ moduleName }: { moduleName: string }) {
+  return (
+    <div className="mt-6 grid place-items-center border border-dashed border-hair bg-panel px-6 py-16 text-center">
+      <div className="max-w-md">
+        <div className="mb-2 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-crimson">
+          Placement module only
+        </div>
+        <p className="text-[0.95rem] leading-relaxed text-muted">
+          This view is built for Placement Intelligence. You are currently viewing the{" "}
+          <span className="text-ink">{moduleName}</span> module. Switch back from the{" "}
+          <a href="/start" className="text-crimson hover:underline">Start</a> screen to use it.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function DomainTag({ domain }: { domain: string }) {
   return (
     <span className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-crimson">

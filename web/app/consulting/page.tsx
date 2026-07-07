@@ -1,10 +1,22 @@
 import { getKpis, getRanking, getRecommendations } from "@/lib/queries";
-import { PageHeader, PlateLabel } from "@/components/ui";
+import { getModule } from "@/lib/module";
+import { MODULE_META } from "@/lib/moduleMeta";
+import { PageHeader, PlateLabel, ModuleNotice } from "@/components/ui";
 import { GuidedMode } from "./GuidedMode";
 
 export const dynamic = "force-dynamic";
 
 export default async function ConsultingPage() {
+  const module = await getModule();
+  if (module !== "placement") {
+    return (
+      <>
+        <PageHeader plate="Plate I" label="Guided Consulting Mode"
+          title={<>Think it through, <em>step by step</em>.</>} />
+        <ModuleNotice moduleName={MODULE_META[module].name} />
+      </>
+    );
+  }
   const [kpis, regions, skills, channels, recs] = await Promise.all([
     getKpis(),
     getRanking("region_placement_rate"),

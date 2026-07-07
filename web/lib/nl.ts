@@ -22,57 +22,63 @@ export type NlAnswer = {
 
 const has = (q: string, words: string[]) => words.some((w) => q.includes(w));
 
+const fmtKpiVal = (unit: string | null, v: number) =>
+  unit === "%" ? `${v.toFixed(1)}%` : unit === "LPA" ? `₹${v.toFixed(1)} LPA`
+    : unit === "Cr" ? `₹${v.toFixed(0)} Cr` : v.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
 async function retrieve(q: string) {
   const lower = q.toLowerCase();
   const kpis = await getKpis();
-  const rate = kpis.find((k) => k.metric_key === "placement_rate");
-  const ctc = kpis.find((k) => k.metric_key === "median_ctc");
 
   const evidence: Record<string, unknown> = {
-    headline: {
-      placement_rate: rate?.value, placement_rate_delta: rate?.delta,
-      median_ctc: ctc?.value, median_ctc_delta: ctc?.delta,
-    },
+    headline: kpis.map((k) => ({ label: k.label, value: k.value, unit: k.unit, delta: k.delta })),
   };
   const citations: string[] = [];
-  if (rate) citations.push(`Placement rate ${rate.value.toFixed(1)}% (${(rate.delta ?? 0) >= 0 ? "+" : ""}${(rate.delta ?? 0).toFixed(1)} pts vs prior cycle).`);
-  if (ctc) citations.push(`Median CTC ₹${ctc.value.toFixed(1)} LPA (${(ctc.delta ?? 0) >= 0 ? "+" : ""}${(ctc.delta ?? 0).toFixed(1)} LPA vs prior cycle).`);
+  for (const k of kpis.slice(0, 3)) {
+    const d = k.delta;
+    citations.push(`${k.label} ${fmtKpiVal(k.unit, k.value)}${d != null ? ` (${d >= 0 ? "+" : ""}${d.toFixed(1)}${k.unit === "%" ? " pts" : k.unit ? " " + k.unit : ""} vs prior)` : ""}.`);
+  }
 
   if (has(lower, ["region", "underperform", "where", "geograph"])) {
     const region = await getRanking("region_placement_rate");
     if (region.length) {
       evidence.regions = region;
-      citations.push(`${region[0].entity} is the weakest region at ${region[0].metric.toFixed(1)}% placement.`);
+      citations.push(`${region[0].entity} is the weakest region at ${region[0].metric.toFixed(1)}%.`);
     }
   }
-  if (has(lower, ["skill", "premium", "critical", "demand", "pay"])) {
+  if (has(lower, ["skill", "premium", "critical", "demand", "pay", "product", "segment"])) {
     const prem = await getRanking("skill_salary_premium");
+    const top = await getRanking("most_demanded_skills");
     if (prem.length) {
       evidence.skill_premium = prem.slice(0, 5);
-      citations.push(`Top skill premium: ${prem[0].entity} at ${prem[0].metric >= 0 ? "+" : ""}${prem[0].metric.toFixed(1)}% over median.`);
+      citations.push(`Top premium: ${prem[0].entity} at ${prem[0].metric >= 0 ? "+" : ""}${prem[0].metric.toFixed(1)}%.`);
+    }
+    if (top.length) {
+      evidence.top_items = top.slice(0, 5);
+      citations.push(`Largest by value: ${top[0].entity}.`);
     }
   }
   if (has(lower, ["channel", "source", "hire", "recruit"])) {
     const ch = await getRanking("channel_effectiveness");
     if (ch.length) {
       evidence.channels = ch;
-      citations.push(`${ch[0].entity} is the highest-yield channel at ${ch[0].metric.toFixed(1)}%.`);
+      citations.push(`${ch[0].entity} leads the channel mix at ${ch[0].metric.toFixed(1)}%.`);
     }
   }
-  if (has(lower, ["ctc", "salary", "forecast", "next", "future", "project"])) {
+  if (has(lower, ["ctc", "salary", "revenue", "forecast", "next", "future", "project"])) {
     const fc = await getForecast("median_ctc_cycle");
     const proj = fc.find((p) => p.is_forecast);
     if (proj) {
-      evidence.ctc_forecast_next = proj.yhat;
-      citations.push(`Median CTC projected to ₹${proj.yhat.toFixed(1)} LPA next cycle.`);
+      evidence.forecast_next = proj.yhat;
+      citations.push(`Projected to ${proj.yhat.toFixed(0)} next period.`);
     }
   }
-  if (has(lower, ["sector", "revenue", "decline", "fall", "fell", "drop", "held back", "it services"])) {
+  if (has(lower, ["sector", "segment", "revenue", "decline", "fall", "fell", "drop", "held back", "margin"])) {
     const recs = await getRecommendations();
-    const it = recs.find((r) => /IT Services/.test(r.title) || /IT Services/.test(r.observation));
-    if (it) {
-      evidence.declining_sector = { title: it.title, observation: it.observation };
-      citations.push(it.observation);
+    const declining = recs.find((r) => /declin|fell|fall|reduce|wind down|sunset|drag|lowest/i.test(r.observation));
+    if (declining) {
+      evidence.declining_line = { title: declining.title, observation: declining.observation };
+      citations.push(declining.observation);
     }
   }
   if (has(lower, ["invest", "budget", "allocate", "should we", "priorit"])) {

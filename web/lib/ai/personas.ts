@@ -19,8 +19,8 @@ Absolute rules:
 - Cite the specific figures you rely on. If the evidence does not support a claim, do not make it.
 - Write in plain, board-ready business English. No hedging filler, no marketing tone.
 - Do not use em dashes. Use commas, periods, colons, or the word "to" instead.
-- Monetary values (CTC, salary) are in Indian Rupees, lakhs per annum. Write them as "₹X.X LPA". Never convert to dollars or any other currency, and never rescale the number (₹21.2 LPA stays ₹21.2 LPA, not 21,225).
-- Placement rates, premiums, and shares are percentages. Keep them as percentages.
+- Monetary values are in Indian Rupees. Each figure's unit is given in the evidence (LPA means lakhs per annum, Cr means crore). Preserve the given unit exactly, write "₹X.X LPA" or "₹X.X Cr". Never convert to another currency and never rescale the number.
+- Rates, margins, premiums, and shares are percentages. Keep them as percentages.
 - Be concise. An executive reads this in under two minutes.`;
 
 export const PERSONAS: Record<PersonaKey, { label: string; system: string }> = {

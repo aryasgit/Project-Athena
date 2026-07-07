@@ -1,10 +1,22 @@
 import { getScenarioBaseline } from "@/lib/queries";
+import { getModule } from "@/lib/module";
+import { MODULE_META } from "@/lib/moduleMeta";
 import { Simulator } from "@/components/Simulator";
-import { PageHeader, PlateLabel } from "@/components/ui";
+import { PageHeader, PlateLabel, ModuleNotice } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function SimulatorPage() {
+  const module = await getModule();
+  if (module !== "placement") {
+    return (
+      <>
+        <PageHeader plate="Plate I" label="Decision Simulator"
+          title={<>Change the assumptions, <em>watch the decision move</em>.</>} />
+        <ModuleNotice moduleName={MODULE_META[module].name} />
+      </>
+    );
+  }
   const baseline = await getScenarioBaseline();
 
   return (

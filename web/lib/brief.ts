@@ -32,45 +32,52 @@ const fmtDelta = (d: number | null, unit = "") =>
   d == null ? "" : `${d >= 0 ? "up" : "down"} ${Math.abs(d).toFixed(1)}${unit}`;
 
 export async function buildExecutiveBrief(): Promise<ExecutiveBrief> {
-  const [kpis, recs, skillPrem, region, channel, ctcForecast, baseline] = await Promise.all([
+  const [kpis, recs, skillPrem, region, channel, ctcForecast, topList] = await Promise.all([
     getKpis(),
     getRecommendations(),
     getRanking("skill_salary_premium"),
     getRanking("region_placement_rate"),
     getRanking("channel_effectiveness"),
     getForecast("median_ctc_cycle"),
-    getScenarioBaseline(),
+    getRanking("most_demanded_skills"),
   ]);
 
-  const rate = byKey(kpis, "placement_rate");
-  const ctc = byKey(kpis, "median_ctc");
-  const placed = byKey(kpis, "total_placements");
-  const topSector = byKey(kpis, "top_sector_hiring");
-  const cycle = rate?.context?.replace("Cycle ", "") ?? "latest";
+  const cycle = kpis[0]?.context?.replace(/^(Cycle|FY)\s*/i, "") ?? "the latest period";
   const projected = ctcForecast.find((p) => p.is_forecast);
   const topSkill = skillPrem[0];
+  const topItem = topList[0];
   const bestChannel = channel[0];
   const weakRegion = region[0];
+  const moneyUnit = kpis.find((k) => k.unit === "LPA" || k.unit === "Cr")?.unit ?? "";
 
-  // --- deterministic narrative ---------------------------------------------
+  const fmtKpi = (k?: Kpi | null) => {
+    if (!k) return "";
+    if (k.unit === "%") return `${k.value.toFixed(1)}%`;
+    if (k.unit === "LPA") return `₹${k.value.toFixed(1)} LPA`;
+    if (k.unit === "Cr") return `₹${k.value.toFixed(0)} Cr`;
+    return k.value.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  };
+
+  // --- deterministic narrative (module-agnostic) ---------------------------
+  const kpiSentence = kpis.slice(0, 3).map((k) =>
+    `${k.label.toLowerCase()} at ${fmtKpi(k)}` +
+    (k.delta != null ? ` (${fmtDelta(k.delta, k.unit === "%" ? " points" : k.unit ? ` ${k.unit}` : "")})` : "")
+  ).join(", ");
   const summary =
-    `In the ${cycle} cycle, ${placed ? Math.round(placed.value).toLocaleString("en-IN") : "the"} students were placed at a ` +
-    `${rate ? rate.value.toFixed(1) : ""}% placement rate (${fmtDelta(rate?.delta ?? null, " points")} on the prior cycle), ` +
-    `with a median CTC of ₹${ctc ? ctc.value.toFixed(1) : ""} LPA (${fmtDelta(ctc?.delta ?? null, " LPA")}). ` +
-    (topSector ? `${topSector.context} is the largest recruiting sector. ` : "") +
-    (projected ? `The salary trajectory projects to ₹${projected.yhat.toFixed(1)} LPA next cycle.` : "");
+    `For ${cycle}, the headline position is ${kpiSentence}. ` +
+    (projected ? `The trajectory projects to ₹${projected.yhat.toFixed(0)} ${moneyUnit} next period.` : "");
 
   const insights = [
-    topSkill && `${topSkill.entity} carries the clearest salary premium at ${topSkill.metric >= 0 ? "+" : ""}${topSkill.metric.toFixed(1)}% over the median, marking where pay is concentrating.`,
-    bestChannel && `${bestChannel.entity} is the highest-yield hiring channel at a ${bestChannel.metric.toFixed(1)}% placement rate.`,
-    weakRegion && `${weakRegion.entity} is the weakest region at ${weakRegion.metric.toFixed(1)}%, below the ${rate ? rate.value.toFixed(1) : ""}% institution average.`,
-    ctc?.delta != null && `Median CTC moved ${fmtDelta(ctc.delta, " LPA")} year on year, ${ctc.delta >= 0 ? "a real gain" : "a decline to watch"}.`,
+    topSkill && `${topSkill.entity} carries the clearest premium at ${topSkill.metric >= 0 ? "+" : ""}${topSkill.metric.toFixed(1)}%, marking where value concentrates.`,
+    !topSkill && topItem && `${topItem.entity} is the single largest line in the book.`,
+    bestChannel && `${bestChannel.entity} leads the channel mix at ${bestChannel.metric.toFixed(1)}%.`,
+    weakRegion && `${weakRegion.entity} is the weakest region at ${weakRegion.metric.toFixed(1)}%, below every other region.`,
   ].filter(Boolean) as string[];
 
   const highRisks = recs.filter((r) => r.priority === "High");
   const risks = [
     ...highRisks.map((r) => r.observation),
-    weakRegion && `Placement is concentrated away from ${weakRegion.entity}, leaving that region's students and employer relationships exposed.`,
+    weakRegion && `${weakRegion.entity} runs materially below the other regions and concentrates downside risk.`,
   ].filter(Boolean).slice(0, 4) as string[];
 
   const recommendations = recs.slice(0, 5).map((r: Recommendation) => ({
@@ -83,12 +90,13 @@ export async function buildExecutiveBrief(): Promise<ExecutiveBrief> {
     .slice(0, 4);
 
   const evidence = {
-    cycle, placement_rate: rate?.value, placement_rate_delta: rate?.delta,
-    median_ctc: ctc?.value, median_ctc_delta: ctc?.delta, students_placed: placed?.value,
-    top_sector: topSector?.context, projected_next_ctc: projected?.yhat,
+    period: cycle,
+    kpis: kpis.map((k) => ({ label: k.label, value: k.value, unit: k.unit, delta: k.delta })),
+    projected_next: projected && { value: projected.yhat, unit: moneyUnit },
+    top_ranked_item: topItem && { name: topItem.entity, metric: topItem.metric },
     top_skill_premium: topSkill && { skill: topSkill.entity, premium_pct: topSkill.metric },
-    best_channel: bestChannel && { channel: bestChannel.entity, rate: bestChannel.metric },
-    weak_region: weakRegion && { region: weakRegion.entity, rate: weakRegion.metric },
+    best_channel: bestChannel && { channel: bestChannel.entity, metric: bestChannel.metric },
+    weak_region: weakRegion && { region: weakRegion.entity, metric: weakRegion.metric },
     recommendations: recs.map((r) => ({ title: r.title, priority: r.priority, domain: r.domain })),
   };
 

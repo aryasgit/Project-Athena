@@ -1,4 +1,5 @@
-import { sql, MODULE } from "./db";
+import { sql } from "./db";
+import { getModule } from "./module";
 import { SNAPSHOT, snapSeries, snapRanking, snapForecast } from "./snapshot";
 
 const asNum = (v: unknown) => (v == null ? null : Number(v));
@@ -65,7 +66,7 @@ export function getKpis() {
   return safe(async () => {
     const rows = await sql!<Kpi[]>`
       SELECT metric_key, label, value, unit, delta, context
-      FROM analytics_kpi WHERE module = ${MODULE}
+      FROM analytics_kpi WHERE module = ${await getModule()}
       ORDER BY metric_key`;
     return rows.map((r) => ({ ...r, value: num(r.value), delta: r.delta == null ? null : num(r.delta) }));
   }, SNAPSHOT.kpis.map((r) => ({
@@ -78,7 +79,7 @@ export function getSeries(seriesKey: string) {
   return safe(async () => {
     const rows = await sql!<SeriesPoint[]>`
       SELECT period, dimension, value FROM analytics_series
-      WHERE module = ${MODULE} AND series_key = ${seriesKey}
+      WHERE module = ${await getModule()} AND series_key = ${seriesKey}
       ORDER BY id`;
     return rows.map((r) => ({ ...r, period: r.period == null ? null : isoDate(r.period), value: num(r.value) }));
   }, snapSeries(seriesKey).map((r) => ({
@@ -90,7 +91,7 @@ export function getRanking(rankingKey: string) {
   return safe(async () => {
     const rows = await sql!<RankingRow[]>`
       SELECT entity, dimension, metric, secondary, rank FROM analytics_ranking
-      WHERE module = ${MODULE} AND ranking_key = ${rankingKey}
+      WHERE module = ${await getModule()} AND ranking_key = ${rankingKey}
       ORDER BY rank`;
     return rows.map((r) => ({
       ...r, metric: num(r.metric), secondary: r.secondary == null ? null : num(r.secondary),
@@ -106,7 +107,7 @@ export function getForecast(seriesKey: string) {
     const rows = await sql!<ForecastPoint[]>`
       SELECT period, dimension, yhat, yhat_lower, yhat_upper, is_forecast
       FROM forecast_series
-      WHERE module = ${MODULE} AND series_key = ${seriesKey}
+      WHERE module = ${await getModule()} AND series_key = ${seriesKey}
       ORDER BY period`;
     return rows.map((r) => ({
       ...r, period: isoDate(r.period), yhat: num(r.yhat),
@@ -147,7 +148,7 @@ export function getScenarioBaseline() {
       FROM latest`;
     const region = await sql!<{ entity: string; metric: number }[]>`
       SELECT entity, metric FROM analytics_ranking
-      WHERE module = ${MODULE} AND ranking_key = 'region_placement_rate'
+      WHERE module = ${await getModule()} AND ranking_key = 'region_placement_rate'
       ORDER BY rank LIMIT 1`;
     return {
       placementRate: num(agg.rate), medianCtc: num(agg.ctc), cohort: num(agg.cohort),
@@ -163,7 +164,7 @@ export function getRecommendations() {
     const rows = await sql!<Recommendation[]>`
       SELECT recommendation_key, domain, title, observation, business_impact,
              recommended_action, priority, confidence, evidence
-      FROM recommendations WHERE module = ${MODULE}
+      FROM recommendations WHERE module = ${await getModule()}
       ORDER BY
         CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END,
         recommendation_key`;

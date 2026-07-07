@@ -1,11 +1,23 @@
 import { getRanking, getSeries, getRecommendations } from "@/lib/queries";
+import { getModule } from "@/lib/module";
+import { MODULE_META } from "@/lib/moduleMeta";
 import { BarList } from "@/components/charts";
-import { Plate, CardTitle, PageHeader, PlateLabel } from "@/components/ui";
+import { Plate, CardTitle, PageHeader, PlateLabel, ModuleNotice } from "@/components/ui";
 import { RecommendationCard } from "@/components/RecommendationCard";
 
 export const dynamic = "force-dynamic";
 
 export default async function SkillsPage() {
+  const module = await getModule();
+  if (module !== "placement") {
+    return (
+      <>
+        <PageHeader plate="Plate I" label="Talent and Skill Analytics"
+          title={<>What the market <em>pays for</em>.</>} />
+        <ModuleNotice moduleName={MODULE_META[module].name} />
+      </>
+    );
+  }
   const [premium, demand, demandSeries, recs] = await Promise.all([
     getRanking("skill_salary_premium"),
     getRanking("most_demanded_skills"),

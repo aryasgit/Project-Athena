@@ -4,6 +4,7 @@ import { DeltaTag } from "./ui";
 function formatValue(k: Kpi): string {
   if (k.unit === "%") return `${k.value.toFixed(1)}%`;
   if (k.unit === "LPA") return `₹${k.value.toFixed(1)}`;
+  if (k.unit === "Cr") return `₹${k.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
   return k.value.toLocaleString("en-IN", { maximumFractionDigits: k.value % 1 === 0 ? 0 : 2 });
 }
 

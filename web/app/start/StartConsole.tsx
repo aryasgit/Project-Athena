@@ -1,16 +1,20 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plate } from "@/components/ui";
 
 const DOMAINS = [
   { key: "placement", label: "Placement Intelligence", status: "Live", note: "Hiring, salary, skills, university comparisons." },
+  { key: "finance", label: "Finance Intelligence", status: "Live", note: "Revenue, margin, segments, capital allocation." },
   { key: "hr", label: "HR Analytics", status: "Preview", note: "Recruitment, promotions, attrition." },
   { key: "retail", label: "Retail Analytics", status: "Preview", note: "Sales, revenue, inventory." },
-  { key: "finance", label: "Finance", status: "Preview", note: "Profitability, cost drivers, allocation." },
   { key: "customer", label: "Customer Analytics", status: "Preview", note: "Churn, segmentation, retention." },
 ];
+
+function setModuleCookie(m: string) {
+  document.cookie = `athena_module=${m}; path=/; max-age=31536000; samesite=lax`;
+}
 
 // The friendly schema Athena's placement engine expects from an uploaded file.
 const REQUIRED = ["student_id", "university", "tier", "region", "cgpa_band", "prior_internship", "channel", "sector", "role", "is_placed", "ctc_lpa"];
@@ -26,9 +30,16 @@ function parseCsv(text: string): { header: string[]; rows: string[][] } {
 }
 
 export function StartConsole() {
+  const router = useRouter();
   const [domain, setDomain] = useState("placement");
   const [report, setReport] = useState<Report | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function analyze() {
+    setModuleCookie(domain);
+    router.push("/");
+    router.refresh();
+  }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -73,12 +84,15 @@ export function StartConsole() {
       <Plate className="p-6">
         <div className="mb-4 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink">Choose a dataset</div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/" className="gbtn">Use the demo dataset</Link>
+          <button onClick={analyze} className="gbtn"
+            style={{ borderColor: "var(--color-crimson)", color: "var(--color-crimson)" }}>
+            Analyze the {DOMAINS.find((d) => d.key === domain)?.label.split(" ")[0]} demo →
+          </button>
           <button onClick={() => fileRef.current?.click()} className="gbtn">Upload a CSV</button>
           <input ref={fileRef} type="file" accept=".csv" onChange={onFile} className="hidden" />
         </div>
         <p className="mt-4 text-[0.78rem] leading-relaxed text-muted">
-          The demo dataset runs the full pipeline immediately. An uploaded file is validated
+          The demo dataset loads the selected module immediately. An uploaded file is validated
           here against the expected schema, then analysed through the orchestration API.
         </p>
       </Plate>
