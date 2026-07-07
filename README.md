@@ -1,7 +1,14 @@
 # Project Athena: Enterprise Decision Intelligence Platform
 
+**Live: https://web-jet-seven-49.vercel.app**
+
 Athena turns fragmented organizational data into **strategic recommendations**, not just charts.
 Most BI tools stop at *"what happened?"* Athena is built to answer *"what should we do next?"*
+
+The live deploy runs from a committed data snapshot, so the dashboard, the What-If
+Simulator, the guided consulting walkthrough, and the executive brief all work with no
+database. Point `DATABASE_URL` at Postgres (or Supabase) to run live off the warehouse,
+and stand up the orchestration API for live rebuilds and the natural-language Ask console.
 
 It is the third and culminating system in the **Decision Intelligence Initiative**, a
 portfolio exploring how complex decisions are made, executed, and optimized across markets
