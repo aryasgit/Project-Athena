@@ -19,9 +19,13 @@ function isVouched(rec: Recommendation): boolean {
   return typeof p === "number" && p < 0.05;
 }
 
+const PRIORITY_ACCENT: Record<string, string> = {
+  High: "var(--color-danger)", Medium: "var(--color-pending)", Low: "var(--color-muted)",
+};
+
 export function RecommendationCard({ rec }: { rec: Recommendation }) {
   return (
-    <Plate className="p-6">
+    <Plate className="p-6 pl-7" style={{ borderLeft: `2px solid ${PRIORITY_ACCENT[rec.priority] ?? "var(--color-hair)"}` }}>
       <div className="flex items-start justify-between gap-5">
         <div>
           <DomainTag domain={rec.domain} />

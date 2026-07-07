@@ -13,7 +13,7 @@ export function Figures({ kpis }: { kpis: Kpi[] }) {
   return (
     <div
       className="figs"
-      style={{ ["--cols" as string]: Math.min(kpis.length, 5) }}
+      style={{ ["--cols" as string]: Math.min(kpis.length, 5), borderTop: "2px solid var(--color-str)" }}
     >
       {kpis.map((k) => (
         <div key={k.metric_key} className="fig">

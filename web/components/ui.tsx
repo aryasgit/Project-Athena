@@ -12,13 +12,11 @@ function Tick({ pos }: { pos: "tl" | "br" }) {
 }
 
 /* A hairline plate on the same paper, with drafting ticks at two corners. */
-export function Plate({ children, className = "", ticks = true }: {
-  children: ReactNode; className?: string; ticks?: boolean;
+export function Plate({ children, className = "", style }: {
+  children: ReactNode; className?: string; style?: React.CSSProperties;
 }) {
   return (
-    <section className={`plate ${className}`}>
-      {ticks && <Tick pos="tl" />}
-      {ticks && <Tick pos="br" />}
+    <section className={`plate ${className}`} style={style}>
       {children}
     </section>
   );
@@ -51,11 +49,17 @@ export function PageHeader({ plate, label, title, lede }: {
 
 /* A section demarcation used between content blocks on a page. */
 export function PlateLabel({ plate, label }: { plate: string; label: string }) {
+  const idx = plate.replace(/plate\s*/i, "");
   return (
-    <div className="eyebrow mb-5 mt-16 first:mt-0">
-      <span className="pl">{plate}</span>
-      <span>{label}</span>
-      <span className="ln" />
+    <div className="mb-6 mt-16 flex items-end gap-3 border-b border-hair pb-2.5 first:mt-2">
+      <span className="font-mono text-[0.82rem] font-medium leading-none text-str">{idx}</span>
+      <h2 style={{ fontFamily: "var(--font-display)" }}
+        className="text-[1.55rem] font-bold leading-none tracking-[-0.02em] text-ink">
+        {label}
+      </h2>
+      <span className="mb-0.5 ml-auto font-mono text-[0.56rem] uppercase tracking-[0.08em] text-faint">
+        {"// section"}
+      </span>
     </div>
   );
 }

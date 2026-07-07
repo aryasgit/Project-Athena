@@ -64,10 +64,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Emphasis stays monotone; the neon lives in an underline accent. */
 em {
   font-style: normal;
-  color: var(--color-num);
-  font-weight: 600;
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--color-str);
+  text-decoration-thickness: 0.055em;
+  text-underline-offset: 0.14em;
 }
 
 ::selection { background: color-mix(in srgb, var(--color-str) 28%, transparent); color: var(--color-ink); }
@@ -199,6 +204,24 @@ em {
 }
 .navlink:hover { color: var(--color-ink); }
 .navlink[data-active="true"] { color: var(--color-str); border-bottom-color: var(--color-str); }
+
+/* --- sidebar links -------------------------------------------------- */
+.sidelink {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 7px 10px;
+  color: var(--color-muted);
+  border-left: 2px solid transparent;
+  transition: color 0.15s var(--ease), background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.sidelink:hover { color: var(--color-ink); background: var(--color-panel); }
+.sidelink[data-active="true"] {
+  color: var(--color-str);
+  border-left-color: var(--color-str);
+  background: color-mix(in srgb, var(--color-str) 9%, transparent);
+}
 
 /* --- levers --------------------------------------------------------- */
 .lever {
