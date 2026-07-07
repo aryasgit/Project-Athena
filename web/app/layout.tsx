@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Libre+Caslon+Display&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen">
         <Masthead />
-        <main className="mx-auto max-w-[1080px] px-6 pb-32 pt-12 md:px-10">
+        <main className="mx-auto max-w-[1140px] px-6 pb-32 pt-10 md:px-8">
           {children}
         </main>
       </body>

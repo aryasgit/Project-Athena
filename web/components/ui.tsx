@@ -37,13 +37,13 @@ export function PageHeader({ plate, label, title, lede }: {
       </div>
       <div className="rule mb-5" />
       <h1
-        className="max-w-[18ch] font-serif font-normal leading-[1.05] tracking-[-0.01em] text-ink"
-        style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(2.1rem,4.6vw,3.1rem)" }}
+        className="max-w-[20ch] font-bold leading-[1.03] tracking-[-0.025em] text-ink"
+        style={{ fontSize: "clamp(1.9rem,4vw,2.7rem)" }}
       >
         {title}
       </h1>
       {lede && (
-        <p className="mt-4 max-w-[58ch] text-[1.04rem] leading-relaxed text-muted">{lede}</p>
+        <p className="mt-3.5 max-w-[62ch] text-[0.98rem] leading-relaxed text-muted">{lede}</p>
       )}
     </header>
   );
@@ -82,8 +82,8 @@ export function DeltaTag({ delta, unit }: { delta: number | null; unit?: string 
   const value = Math.abs(delta).toFixed(unit === "%" ? 1 : delta % 1 === 0 ? 0 : 1);
   return (
     <span
-      className="inline-flex items-center gap-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] tabular"
-      style={{ color: positive ? "var(--color-ink)" : "var(--color-danger)" }}
+      className="inline-flex items-center gap-1 text-[0.64rem] font-semibold tabular"
+      style={{ color: positive ? "var(--color-positive)" : "var(--color-negative)" }}
     >
       <span aria-hidden>{positive ? "▲" : "▼"}</span>
       {positive ? "+" : "−"}
