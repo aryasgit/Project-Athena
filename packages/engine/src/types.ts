@@ -224,6 +224,8 @@ export interface OrgState {
   world: WorldState;
   /** The board's standing directive, biasing the org until superseded. */
   directive: Directive;
+  /** Day each registry event last fired, for cooldowns. */
+  cooldowns: Record<string, number>;
   /** Rolling window of the most recent events (bounded). */
   log: OrgEvent[];
   /** Lifecycle. A world keeps existing until paused or terminated. */

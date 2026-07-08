@@ -189,6 +189,7 @@ export function createOrganization(config: SimConfig): OrgState {
     agents,
     world,
     directive: { kind: "steady", label: "Stay the course", sinceDay: 0 },
+    cooldowns: {},
     log: [
       {
         day: 0,

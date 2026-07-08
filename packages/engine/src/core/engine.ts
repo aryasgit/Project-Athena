@@ -27,6 +27,7 @@ import { clamp, effectivenessOf } from "../state";
 import { personName, projectName, roleFor } from "../data/names";
 import { advanceWorld, seedWorld } from "./world";
 import { directiveBias, runOrchestration } from "./orchestration";
+import { rollEvents } from "./events";
 import { resolveRuleset } from "../ruleset";
 
 const LOG_LIMIT = 80;
@@ -270,6 +271,30 @@ export function advance(state: OrgState): TickResult {
     growth,
   };
 
+  // ── Stochastic events & disasters perturb the org ─────────────────────────
+  const roll = rollEvents({ ...state, day, date, metrics, world: w.world }, rng, day, date, R);
+  for (const f of roll.fx) {
+    if (f.cash) metrics.cash += f.cash;
+    if (f.demand) metrics.demand = clamp(metrics.demand + f.demand);
+    if (f.reputation) metrics.reputation = clamp(metrics.reputation + f.reputation);
+    if (f.morale) metrics.morale = clamp(metrics.morale + f.morale);
+    if (f.customerSat) metrics.customerSat = clamp(metrics.customerSat + f.customerSat);
+    if (f.techDebt) metrics.techDebt = clamp(metrics.techDebt + f.techDebt);
+    if (f.innovation) metrics.innovation = clamp(metrics.innovation + f.innovation);
+    if (f.risk) metrics.risk = clamp(metrics.risk + f.risk);
+    if (f.loseKeyPerson) {
+      const active = employees.filter((e) => e.status === "active");
+      if (active.length) {
+        const gone = active[rng.int(0, active.length - 1)];
+        gone.status = "left";
+        const dept = departments.find((d) => d.id === gone.deptId);
+        if (dept) dept.headcount = Math.max(1, dept.headcount - 1);
+        metrics.headcount = Math.max(1, metrics.headcount - 1);
+      }
+    }
+  }
+  for (const e of roll.events) events.push(e);
+
   // executives' confidence tracks performance
   const executives = state.agents.executives.map((x) => ({
     ...x,
@@ -319,6 +344,7 @@ export function advance(state: OrgState): TickResult {
       agents: nextAgents,
       world: w.world,
       directive: orch.directive,
+      cooldowns: roll.cooldowns,
       log,
       status,
     },
