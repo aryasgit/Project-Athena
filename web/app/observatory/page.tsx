@@ -8,6 +8,7 @@ import { clearWorld, loadConfig, loadWorld, randomSeed } from "@/lib/world";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
 import { OrgTopology } from "@/components/OrgTopology";
+import { WorldPanel } from "@/components/WorldPanel";
 import { EventFeed } from "@/components/EventFeed";
 import { Sparkline } from "@/components/Sparkline";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -21,7 +22,10 @@ export default function ObservatoryRoute() {
   useEffect(() => {
     const config = loadConfig();
     const saved = loadWorld();
-    const resume = saved && saved.config.seed === config.seed && saved.config.name === config.name ? saved : null;
+    const resume =
+      saved && saved.world && saved.directive && saved.config.seed === config.seed && saved.config.name === config.name
+        ? saved
+        : null;
     setBoot({ config, resume });
   }, []);
 
@@ -37,7 +41,7 @@ export default function ObservatoryRoute() {
 
 function Observatory({ config, resume }: { config: SimConfig; resume: OrgState | null }) {
   const seedRef = useRef(config.seed);
-  const [view, setView] = useState<"vitals" | "topology">("vitals");
+  const [view, setView] = useState<"vitals" | "topology" | "world">("vitals");
   const sim = useSimulation(config, resume);
   const { state, history } = sim;
   const m = state.metrics;
@@ -66,12 +70,15 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
         onReset={handleReset}
       />
 
-      <div className="mx-auto flex max-w-[1360px] items-center justify-between px-5 py-2 md:px-8">
-        <Link href="/create" className="glitch label hover:text-[var(--color-phosphor)]">
+      <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 px-5 py-2 md:px-8">
+        <Link href="/create" className="glitch label shrink-0 hover:text-[var(--color-phosphor)]">
           ← NEW COMPANY
         </Link>
-        <span className="label hidden sm:inline">
-          OBSERVATORY · SEED {state.config.seed} · {state.config.industry.toUpperCase()}
+        <span className="label hidden truncate md:inline">
+          DIRECTIVE · <span className="text-[var(--color-phosphor)]">{state.directive.label}</span>
+        </span>
+        <span className="label hidden shrink-0 sm:inline">
+          SEED {state.config.seed} · {state.config.industry.toUpperCase()}
         </span>
       </div>
 
@@ -120,12 +127,15 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
           </div>
 
           <div className="px-5 pb-8 pt-6 md:px-8">
-            <div className="mb-4 flex items-center gap-1.5">
+            <div className="mb-4 flex flex-wrap items-center gap-1.5">
               <button className="gbtn" data-active={view === "vitals"} onClick={() => setView("vitals")}>
                 Vital signs
               </button>
               <button className="gbtn" data-active={view === "topology"} onClick={() => setView("topology")}>
                 Org topology
+              </button>
+              <button className="gbtn" data-active={view === "world"} onClick={() => setView("world")}>
+                World
               </button>
               {view === "topology" && (
                 <span className="label ml-auto hidden sm:inline">
@@ -133,7 +143,7 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
                 </span>
               )}
             </div>
-            {view === "vitals" ? (
+            {view === "vitals" && (
               <>
                 <VitalSigns metrics={m} />
                 <p className="mt-4 max-w-[74ch] text-[0.78rem] leading-relaxed text-[var(--color-muted)]">
@@ -141,11 +151,13 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
                   erodes customer satisfaction, reputation feeds demand. The Phosphor marks critical state.
                 </p>
               </>
-            ) : (
+            )}
+            {view === "topology" && (
               <div className="border border-[var(--color-grid)] bg-[var(--color-void)]">
                 <OrgTopology agents={state.agents} />
               </div>
             )}
+            {view === "world" && <WorldPanel world={state.world} directive={state.directive} />}
           </div>
         </section>
 
