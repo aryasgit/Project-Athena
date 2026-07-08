@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { DEFAULT_CONFIG, useSimulation } from "@/lib/useSimulation";
+import type { SimConfig } from "@athena/engine";
+import { useSimulation } from "@/lib/useSimulation";
+import { loadConfig, randomSeed } from "@/lib/world";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
 import { EventFeed } from "@/components/EventFeed";
@@ -10,9 +12,25 @@ import { Sparkline } from "@/components/Sparkline";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { currency, signedPct } from "@/lib/format";
 
-export default function Observatory() {
-  const seedRef = useRef(DEFAULT_CONFIG.seed);
-  const sim = useSimulation(DEFAULT_CONFIG);
+export default function ObservatoryRoute() {
+  // Load the created company on the client (avoids SSR/hydration mismatch on
+  // the static export). Until it's loaded, hold a brief boot state.
+  const [config, setConfig] = useState<SimConfig | null>(null);
+  useEffect(() => setConfig(loadConfig()), []);
+
+  if (!config) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="label pulse">BOOTING ORGANIZATION…</span>
+      </div>
+    );
+  }
+  return <Observatory config={config} />;
+}
+
+function Observatory({ config }: { config: SimConfig }) {
+  const seedRef = useRef(config.seed);
+  const sim = useSimulation(config);
   const { state, history } = sim;
   const m = state.metrics;
 
@@ -23,9 +41,10 @@ export default function Observatory() {
   const net = m.revenue - m.expenses;
   const runway = net < 0 ? m.cash / -net : Infinity;
 
+  // Reset re-runs the SAME company with a fresh seed — a different plausible life.
   const handleReset = () => {
-    seedRef.current += 1;
-    sim.reset({ ...DEFAULT_CONFIG, seed: seedRef.current });
+    seedRef.current = randomSeed();
+    sim.reset({ ...config, seed: seedRef.current });
   };
 
   return (
@@ -39,10 +58,9 @@ export default function Observatory() {
         onReset={handleReset}
       />
 
-      {/* coordinate strip */}
       <div className="mx-auto flex max-w-[1360px] items-center justify-between px-5 py-2 md:px-8">
-        <Link href="/" className="glitch label hover:text-[var(--color-phosphor)]">
-          ← ATHENA / ROOT
+        <Link href="/create" className="glitch label hover:text-[var(--color-phosphor)]">
+          ← NEW COMPANY
         </Link>
         <span className="label hidden sm:inline">
           OBSERVATORY · SEED {state.config.seed} · {state.config.industry.toUpperCase()}
@@ -50,9 +68,7 @@ export default function Observatory() {
       </div>
 
       <main className="mx-auto grid max-w-[1360px] grid-cols-1 gap-px bg-[var(--color-grid)] lg:grid-cols-[1.9fr_1fr]">
-        {/* ── main column ─────────────────────────────────────────────── */}
         <section className="bg-[var(--color-void)]">
-          {/* Treasury */}
           <div className="bracket relative overflow-hidden border-b border-[var(--color-grid)] px-5 py-7 md:px-8">
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div>
@@ -90,24 +106,21 @@ export default function Observatory() {
             </div>
           </div>
 
-          {/* Flows */}
           <div className="grid grid-cols-2 gap-px border-b border-[var(--color-grid)] bg-[var(--color-grid)]">
             <Flow label="Revenue / day" value={m.revenue} series={revSeries} />
             <Flow label="Expenses / day" value={m.expenses} series={expSeries} />
           </div>
 
-          {/* Vital signs */}
           <div className="px-5 pb-8 pt-6 md:px-8">
             <div className="label mb-3">Vital signs</div>
             <VitalSigns metrics={m} />
-            <p className="mono mt-4 max-w-[74ch] text-[0.66rem] leading-relaxed text-[var(--color-faint)]">
-              // NO SINGLE KPI DEFINES SUCCESS. THESE CO-EVOLVE — CASH PRESSURES MORALE, TECH DEBT
-              ERODES CUSTOMER SATISFACTION, REPUTATION FEEDS DEMAND. THE PHOSPHOR MARKS CRITICAL STATE.
+            <p className="mt-4 max-w-[74ch] text-[0.78rem] leading-relaxed text-[var(--color-muted)]">
+              No single KPI defines success. These co-evolve — cash pressures morale, tech debt
+              erodes customer satisfaction, reputation feeds demand. The Phosphor marks critical state.
             </p>
           </div>
         </section>
 
-        {/* ── world feed ──────────────────────────────────────────────── */}
         <aside className="flex flex-col bg-[var(--color-void)]">
           <div className="sticky top-[57px] z-10 flex items-center justify-between border-b border-[var(--color-grid)] bg-[var(--color-void)] px-4 py-3">
             <span className="label">World feed</span>

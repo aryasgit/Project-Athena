@@ -78,7 +78,7 @@ export default function Landing() {
               customers and markets, accumulating over time. <span className="text-[var(--color-ash)]">Signal over noise.</span>
             </p>
             <div className="flex flex-col items-start gap-3 md:items-end">
-              <Link href="/observatory" className="gbtn glitch text-[0.8rem]">
+              <Link href="/create" className="gbtn glitch text-[0.8rem]">
                 ▶ INITIALIZE SIMULATION
               </Link>
               <a href="#question" className="label hover:text-[var(--color-phosphor)]">→ WHAT WE ASK</a>
@@ -162,7 +162,7 @@ export default function Landing() {
             INITIALIZE
           </h2>
           <div className="mt-8 flex flex-wrap items-center gap-6">
-            <Link href="/observatory" className="gbtn glitch text-[0.85rem]">
+            <Link href="/create" className="gbtn glitch text-[0.85rem]">
               ▶ START SIMULATION
             </Link>
             <span className="mono text-[0.75rem] text-[var(--color-muted)]">

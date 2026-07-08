@@ -3,8 +3,8 @@
  * is reproducible down to its people and projects.
  */
 
-import type { DepartmentKind, ExecRole } from "../types.js";
-import type { Rng } from "../core/rng.js";
+import type { DepartmentKind, ExecRole } from "../types";
+import type { Rng } from "../core/rng";
 
 const FIRST = [
   "Ada", "Ren", "Mara", "Kai", "Ilse", "Theo", "Nadia", "Ivo", "Suki", "Cole",

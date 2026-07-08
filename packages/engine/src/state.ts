@@ -16,9 +16,9 @@ import type {
   OrgState,
   ProjectState,
   SimConfig,
-} from "./types.js";
-import { Rng } from "./core/rng.js";
-import { deptLabel, personName, projectName, roleFor, EXEC_FOCUS, EXEC_ROLES } from "./data/names.js";
+} from "./types";
+import { Rng } from "./core/rng";
+import { deptLabel, personName, projectName, roleFor, EXEC_FOCUS } from "./data/names";
 
 const SIZE_HEADCOUNT: Record<SimConfig["size"], number> = {
   startup: 12,

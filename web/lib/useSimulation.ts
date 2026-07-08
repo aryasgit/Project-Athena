@@ -91,17 +91,3 @@ export function useSimulation(config: SimConfig) {
     [state, history, speed, running, step, reset],
   );
 }
-
-/** The default world the observatory boots into (Phase 1 adds a Create flow). */
-export const DEFAULT_CONFIG: SimConfig = {
-  seed: 1337,
-  name: "Meridian Systems",
-  industry: "software",
-  initialCapital: 1_500_000,
-  philosophy: "innovation",
-  size: "scaleup",
-  growthStrategy: "aggressive",
-  riskAppetite: "balanced",
-  departments: ["engineering", "sales", "marketing", "operations", "research"],
-  startDate: "2026-01-01",
-};

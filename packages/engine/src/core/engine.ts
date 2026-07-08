@@ -21,11 +21,11 @@ import type {
   OrgState,
   ProjectState,
   TickResult,
-} from "../types.js";
-import { Rng } from "./rng.js";
-import { addDays } from "./clock.js";
-import { clamp, effectivenessOf } from "../state.js";
-import { personName, projectName, roleFor } from "../data/names.js";
+} from "../types";
+import { Rng } from "./rng";
+import { addDays } from "./clock";
+import { clamp, effectivenessOf } from "../state";
+import { personName, projectName, roleFor } from "../data/names";
 
 const LOG_LIMIT = 80;
 const COST_PER_HEAD = 520; // daily fully-loaded cost per employee
