@@ -22,11 +22,15 @@ export default function ObservatoryRoute() {
   useEffect(() => {
     const config = loadConfig();
     const saved = loadWorld();
-    const resume =
-      saved && saved.world && saved.directive && saved.config.seed === config.seed && saved.config.name === config.name
-        ? saved
-        : null;
-    setBoot({ config, resume });
+    const current =
+      saved &&
+      saved.world &&
+      saved.directive &&
+      saved.cooldowns &&
+      saved.agents?.executives?.every((e) => !!e.traits) &&
+      saved.config.seed === config.seed &&
+      saved.config.name === config.name;
+    setBoot({ config, resume: current ? saved : null });
   }, []);
 
   if (!boot) {

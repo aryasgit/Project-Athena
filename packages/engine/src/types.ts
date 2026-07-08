@@ -99,14 +99,29 @@ export interface Metrics {
 
 export type ExecRole = "CEO" | "CFO" | "CTO" | "COO" | "CMO";
 
+/** The personality dials that shape how a leader leads (0..100 each). */
+export interface ExecTraits {
+  risk: number; // appetite for bold moves
+  decisiveness: number; // speed & force of action
+  temperament: number; // high = steady, low = volatile
+  loyalty: number; // likelihood to stay through hardship
+  ego: number; // self-belief / influence
+}
+
 export interface ExecutiveState {
   id: string;
   name: string;
   role: ExecRole;
-  /** what this leader pushes the org toward */
+  /** the persona archetype, e.g. "The Visionary" */
+  archetype: string;
+  /** one-line character bio */
+  bio: string;
+  /** what this leader pushes the org toward (flows from the archetype) */
   focus: "innovation" | "efficiency" | "people" | "growth";
+  traits: ExecTraits;
   influence: number; // 0..100 — how strongly their focus biases the org
   confidence: number; // 0..100 — moves with company performance
+  tenure: number; // days in the seat
 }
 
 export interface DepartmentState {

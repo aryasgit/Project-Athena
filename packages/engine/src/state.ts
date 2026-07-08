@@ -20,7 +20,8 @@ import type {
 import { Rng } from "./core/rng";
 import { seedWorld } from "./core/world";
 import { resolveRuleset } from "./ruleset";
-import { deptLabel, personName, projectName, roleFor, EXEC_FOCUS } from "./data/names";
+import { deptLabel, personName, projectName, roleFor } from "./data/names";
+import { makeExecutive } from "./data/personas";
 
 const SIZE_HEADCOUNT: Record<SimConfig["size"], number> = {
   startup: 12,
@@ -54,15 +55,10 @@ function seedExecutives(config: SimConfig, rng: Rng): ExecutiveState[] {
   const roles: ExecRole[] = ["CEO", "CFO", "CTO"];
   if (config.size !== "startup") roles.push("COO");
   if (config.size === "enterprise" || config.departments.includes("marketing")) roles.push("CMO");
-  return roles.map((role) => ({
-    id: `exec-${role}`,
-    name: personName(rng),
-    role,
-    // the CEO carries the founder's philosophy; the rest carry their office's bias
-    focus: role === "CEO" ? config.philosophy : EXEC_FOCUS[role],
-    influence: Math.round(clamp(52 + rng.range(-8, 14))),
-    confidence: Math.round(clamp(62 + rng.range(-6, 6))),
-  })).filter((_, i, arr) => arr.findIndex((r) => r.role === arr[i].role) === i);
+  // the CEO carries the founder's philosophy; the rest come as their own persona
+  return roles.map((role) =>
+    makeExecutive(`exec-${role}`, role, rng, role === "CEO" ? config.philosophy : undefined),
+  );
 }
 
 function seedDepartments(config: SimConfig, total: number, rng: Rng): DepartmentState[] {

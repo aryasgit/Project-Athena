@@ -25,6 +25,7 @@ import { Rng } from "./rng";
 import { addDays } from "./clock";
 import { clamp, effectivenessOf } from "../state";
 import { personName, projectName, roleFor } from "../data/names";
+import { makeExecutive } from "../data/personas";
 import { advanceWorld, seedWorld } from "./world";
 import { directiveBias, runOrchestration } from "./orchestration";
 import { rollEvents } from "./events";
@@ -295,11 +296,18 @@ export function advance(state: OrgState): TickResult {
   }
   for (const e of roll.events) events.push(e);
 
-  // executives' confidence tracks performance
-  const executives = state.agents.executives.map((x) => ({
-    ...x,
-    confidence: clamp(x.confidence + (growth > 0 ? 0.3 : -0.5) - runwayPressure * 1.5 + rng.range(-0.3, 0.3)),
-  }));
+  // executives' confidence tracks performance; the disheartened may step down
+  const executives = state.agents.executives.map((x) => {
+    const confidence = clamp(x.confidence + (growth > 0 ? 0.3 : -0.5) - runwayPressure * 1.5 + rng.range(-0.3, 0.3));
+    const tenure = (x.tenure ?? 0) + 1;
+    const loyalty = x.traits?.loyalty ?? 60;
+    if (x.traits && confidence < 25 && tenure > 120 && rng.chance(((100 - loyalty) / 100) * 0.02)) {
+      const successor = makeExecutive(x.id, x.role, rng);
+      events.push(evt(day, date, "board", "warn", `${x.name} steps down as ${x.role}`, `After a hard stretch, ${x.name} departs. ${successor.name} — ${successor.archetype} — takes over as ${x.role}.`));
+      return successor;
+    }
+    return { ...x, confidence, tenure };
+  });
 
   // ── Narration: threshold crossings + world events ─────────────────────────
   const cross = (was: number, now: number, t: number) => was >= t && now < t;

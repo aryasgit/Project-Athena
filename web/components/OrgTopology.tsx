@@ -11,7 +11,7 @@ import type { AgentPools } from "@athena/engine";
  * Monotone; The Phosphor marks the critical (low morale, stalled work).
  */
 
-const EXEC = { w: 150, h: 74 };
+const EXEC = { w: 168, h: 92 };
 const DEPT = { w: 180, h: 112 };
 const PROJ = { w: 150, h: 58 };
 const PAD = 40;
@@ -29,7 +29,7 @@ export function OrgTopology({ agents }: { agents: AgentPools }) {
     const ceo = agents.executives.find((x) => x.role === "CEO") ?? agents.executives[0];
 
     agents.executives.forEach((x, i) => {
-      placed.push({ id: x.id, x: PAD + i * 185, y: PAD, w: EXEC.w, h: EXEC.h, kind: "exec", data: { ...x, isCeo: x.id === ceo?.id } });
+      placed.push({ id: x.id, x: PAD + i * 200, y: PAD, w: EXEC.w, h: EXEC.h, kind: "exec", data: { ...x, isCeo: x.id === ceo?.id } });
       if (ceo && x.id !== ceo.id) links.push({ from: ceo.id, to: x.id, crit: false });
     });
 
@@ -114,10 +114,19 @@ export function OrgTopology({ agents }: { agents: AgentPools }) {
 
 function ExecCard({ d }: { d: any }) {
   return (
-    <div className="h-full border bg-[var(--color-panel)] px-3 py-2" style={{ borderColor: d.isCeo ? "var(--color-phosphor)" : "var(--color-grid-2)" }}>
-      <div className="mono text-[0.6rem] uppercase tracking-widest" style={{ color: d.isCeo ? "var(--color-phosphor)" : "var(--color-muted)" }}>{d.role}</div>
-      <div className="mono mt-0.5 text-[0.72rem] text-[var(--color-ash)]">{d.name}</div>
-      <div className="mono text-[0.55rem] uppercase tracking-wider text-[var(--color-faint)]">{d.focus}</div>
+    <div className="h-full border bg-[var(--color-panel)] px-3 py-2" style={{ borderColor: d.isCeo ? "var(--color-phosphor)" : "var(--color-grid-2)" }} title={d.bio}>
+      <div className="flex items-center justify-between">
+        <span className="mono text-[0.6rem] uppercase tracking-widest" style={{ color: d.isCeo ? "var(--color-phosphor)" : "var(--color-muted)" }}>{d.role}</span>
+        <span className="mono text-[0.5rem] uppercase tracking-wider text-[var(--color-faint)]">{d.focus}</span>
+      </div>
+      <div className="mono mt-0.5 truncate text-[0.72rem] text-[var(--color-ash)]">{d.name}</div>
+      <div className="mono truncate text-[0.55rem] text-[var(--color-ash-2)]">{d.archetype}</div>
+      <div className="mono mt-1 flex items-center gap-1 text-[0.5rem] uppercase tracking-wider text-[var(--color-faint)]">
+        <span>CONF</span>
+        <span className="h-[2px] flex-1 bg-[var(--color-grid-2)]">
+          <span className="block h-full" style={{ width: `${d.confidence ?? 60}%`, background: (d.confidence ?? 60) < 30 ? "var(--color-phosphor)" : "var(--color-ash-2)" }} />
+        </span>
+      </div>
     </div>
   );
 }
