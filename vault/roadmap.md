@@ -51,6 +51,21 @@ Make the world creatable and the interior emergent.
 - ⏸ **n8n adapter** — design-first per the initiative's standing rule; not auto-built.
   The scheduler is deliberately modular so n8n could later drive the same cadences.
 
+## ✅ Fidelity & Customization (research-grade pass)
+
+Elevated from a coherent toy to a research instrument.
+
+- **Ruleset** (`packages/engine/src/ruleset.ts`): every governing coefficient is
+  now explicit, tunable data on the config — a run is defined by (seed + ruleset).
+- **Event & disaster engine** (`core/events.ts`): ~16 data-driven situations across
+  internal / market / macro / black-swan classes with state-dependent triggers,
+  cooldowns and effects. Runs diverge into genuinely different, consequential
+  histories (orgs can and do go insolvent).
+- **Executive personas** (`data/personas.ts`): archetypes with five traits, bios and
+  succession. The board's personality mix steers the org.
+- **Research framing**: scenario library + Advanced parameter editor + scenario
+  file import/export in `/create`; run timeseries CSV export in the Observatory.
+
 ## ▢ Phase 3 — Optional AI
 
 - `Advisor` interface with swappable providers: rule-based ▸ Ollama ▸ cloud LLM.
