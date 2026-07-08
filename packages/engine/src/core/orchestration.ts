@@ -10,6 +10,7 @@
  */
 
 import type { Directive, DirectiveKind, OrgEvent, OrgState } from "../types";
+import type { Ruleset } from "../ruleset";
 
 const DIRECTIVE_LABEL: Record<DirectiveKind, string> = {
   "cut-costs": "Cut costs — extend runway",
@@ -24,14 +25,15 @@ export function runOrchestration(
   state: OrgState,
   day: number,
   date: string,
+  R: Ruleset,
 ): { events: OrgEvent[]; directive: Directive } {
   const events: OrgEvent[] = [];
   let directive = state.directive;
 
   // Board meeting every quarter: assess and set the directive.
-  if (day > 0 && day % 90 === 0) {
-    const quarter = day / 90;
-    const kind = decideDirective(state);
+  if (day > 0 && day % R.orchestration.boardCadence === 0) {
+    const quarter = Math.round(day / R.orchestration.boardCadence);
+    const kind = decideDirective(state, R);
     directive = { kind, label: DIRECTIVE_LABEL[kind], sinceDay: day };
 
     const m = state.metrics;
@@ -45,7 +47,7 @@ export function runOrchestration(
       title: `Q${quarter} board review — ${verdict}`,
       detail: `Cash ${money(m.cash)}, growth ${pct(m.growth)}, morale ${m.morale.toFixed(0)}, risk ${m.risk.toFixed(0)}. ${shipped} projects shipped to date. New directive: ${directive.label}.`,
     });
-  } else if (day > 0 && day % 30 === 0) {
+  } else if (day > 0 && day % R.orchestration.reviewCadence === 0) {
     // lighter monthly review
     const m = state.metrics;
     events.push({
@@ -62,29 +64,32 @@ export function runOrchestration(
 }
 
 /** Rule-based board decision: address the org's biggest problem first. */
-function decideDirective(state: OrgState): DirectiveKind {
+function decideDirective(state: OrgState, R: Ruleset): DirectiveKind {
   const m = state.metrics;
   const netBurn = Math.max(0, m.expenses - m.revenue);
   const runway = netBurn > 0 ? m.cash / netBurn : Infinity;
 
-  if (runway < 45 || m.cash < 0) return "cut-costs";
-  if (m.morale < 42) return "protect-people";
-  if (m.techDebt > 62) return "invest-rnd";
+  if (runway < R.orchestration.runwayConcernDays || m.cash < 0) return "cut-costs";
+  if (m.morale < R.orchestration.moraleConcern) return "protect-people";
+  if (m.techDebt > R.orchestration.techDebtConcern) return "invest-rnd";
   if (m.demand > 60 && m.growth > 0) return "seize-market";
   return "steady";
 }
 
 /** How a standing directive biases the org's focus pushes each tick. */
-export function directiveBias(kind: DirectiveKind): Partial<Record<"innovation" | "efficiency" | "people" | "growth", number>> {
+export function directiveBias(
+  kind: DirectiveKind,
+  strength: number,
+): Partial<Record<"innovation" | "efficiency" | "people" | "growth", number>> {
   switch (kind) {
     case "cut-costs":
-      return { efficiency: 0.28 };
+      return { efficiency: strength };
     case "invest-rnd":
-      return { innovation: 0.28 };
+      return { innovation: strength };
     case "seize-market":
-      return { growth: 0.28 };
+      return { growth: strength };
     case "protect-people":
-      return { people: 0.28 };
+      return { people: strength };
     default:
       return {};
   }

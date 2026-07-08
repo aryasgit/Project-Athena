@@ -9,6 +9,7 @@
  */
 
 import type { Competitor, OrgEvent, SimConfig, WorldState } from "../types";
+import type { Ruleset } from "../ruleset";
 import type { Rng } from "./rng";
 import { clamp } from "../state";
 import { competitorName } from "../data/names";
@@ -22,10 +23,13 @@ export interface WorldModifiers {
   riskAdd: number; // added to the risk target
 }
 
-const CYCLE_DAYS = 730; // ~two-year boom/bust wave
-
-export function seedWorld(config: SimConfig, rng: Rng): WorldState {
-  const n = config.size === "startup" ? 2 : config.size === "scaleup" ? 3 : 4;
+export function seedWorld(config: SimConfig, rng: Rng, R: Ruleset): WorldState {
+  const n =
+    config.size === "startup"
+      ? R.world.competitorsStartup
+      : config.size === "scaleup"
+        ? R.world.competitorsScaleup
+        : R.world.competitorsEnterprise;
   const competitors: Competitor[] = Array.from({ length: n }, (_, i) => ({
     id: `comp-${i}`,
     name: competitorName(rng),
@@ -46,18 +50,19 @@ export function advanceWorld(
   prev: WorldState,
   rng: Rng,
   day: number,
+  R: Ruleset,
 ): { world: WorldState; events: OrgEvent[]; mods: WorldModifiers } {
   const events: OrgEvent[] = [];
 
   // economy: a smooth cycle plus drift
-  const economyPhase = prev.economyPhase + (Math.PI * 2) / CYCLE_DAYS;
-  const economy = clamp(Math.sin(economyPhase) * 55 + rng.range(-3, 3), -100, 100);
+  const economyPhase = prev.economyPhase + (Math.PI * 2) / R.economy.cycleDays;
+  const economy = clamp(Math.sin(economyPhase) * R.economy.amplitude + rng.range(-R.economy.volatility, R.economy.volatility), -100, 100);
 
   const sentiment = clamp(prev.sentiment + rng.normal() * 0.8 + economy * 0.004);
 
   // regulation drifts up slowly; supply mostly healthy with occasional shocks
-  let regulation = clamp(prev.regulation + rng.range(-0.05, 0.12));
-  let supply = clamp(prev.supply + (90 - prev.supply) * 0.05 + rng.range(-0.5, 0.5));
+  let regulation = clamp(prev.regulation + rng.range(-0.05, R.world.regulationDrift + 0.085));
+  let supply = clamp(prev.supply + (90 - prev.supply) * R.world.supplyRecovery + rng.range(-0.5, 0.5));
 
   // competitors drift; a strong+aggressive one occasionally makes a move
   let competitivePressure = 0;
@@ -69,18 +74,19 @@ export function advanceWorld(
   competitivePressure = competitivePressure / Math.max(1, competitors.length);
 
   // periodic environmental shocks (deterministic cadence + seeded selection)
-  if (day % 45 === 0 && competitors.length) {
+  const f = R.events.frequency;
+  if (day % R.world.competitorMoveCadence === 0 && competitors.length) {
     const c = competitors[rng.int(0, competitors.length - 1)];
-    if (rng.chance(c.aggression / 100)) {
+    if (rng.chance((c.aggression / 100) * f)) {
       c.strength = clamp(c.strength + 6);
       events.push(mkt("warn", `${c.name} makes a move`, `${c.name} launched aggressively — expect demand and pricing pressure.`, day));
     }
   }
-  if (day % 120 === 0) {
+  if (day % R.world.regulationCadence === 0) {
     regulation = clamp(regulation + rng.range(4, 10));
     events.push(evt("world", "info", "New regulation enacted", "Compliance requirements tightened; overhead rises.", day));
   }
-  if (day % 75 === 0 && rng.chance(0.5)) {
+  if (day % R.world.supplyShockCadence === 0 && rng.chance(0.5 * f)) {
     supply = clamp(supply - rng.range(15, 35));
     events.push(evt("world", "warn", "Supply chain disruption", "Upstream constraints will slow delivery and raise costs.", day));
   }
@@ -90,7 +96,7 @@ export function advanceWorld(
   const mods: WorldModifiers = {
     demandDelta: economy * 0.015 + (sentiment - 50) * 0.01 - (competitivePressure - 45) * 0.02,
     revenueMult: 1 + economy / 320,
-    complianceCost: regulation * 12,
+    complianceCost: regulation * R.finance.compliancePerRegulation,
     supplyMult: 0.6 + (supply / 100) * 0.4,
     riskAdd: Math.max(0, -economy) * 0.08 + Math.max(0, competitivePressure - 55) * 0.15 + regulation * 0.03,
   };

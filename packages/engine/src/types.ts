@@ -13,6 +13,8 @@
  * only through `advance()`.
  */
 
+import type { Ruleset } from "./ruleset";
+
 /** Discrete simulation time. One tick = one business day (V1). */
 export type Tick = number;
 
@@ -59,6 +61,11 @@ export interface SimConfig {
   departments: DepartmentKind[];
   /** Simulated calendar start, ISO date (YYYY-MM-DD). */
   startDate: string;
+  /**
+   * The governing coefficients. Optional in a hand-written config (defaults are
+   * filled in at birth); always present on a live OrgState's config.
+   */
+  ruleset?: Ruleset;
 }
 
 // ── Metrics (the organization's vital signs) ────────────────────────────────

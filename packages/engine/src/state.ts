@@ -19,6 +19,7 @@ import type {
 } from "./types";
 import { Rng } from "./core/rng";
 import { seedWorld } from "./core/world";
+import { resolveRuleset } from "./ruleset";
 import { deptLabel, personName, projectName, roleFor, EXEC_FOCUS } from "./data/names";
 
 const SIZE_HEADCOUNT: Record<SimConfig["size"], number> = {
@@ -138,6 +139,8 @@ function seedProjects(config: SimConfig, departments: DepartmentState[], rng: Rn
 }
 
 export function createOrganization(config: SimConfig): OrgState {
+  const ruleset = resolveRuleset(config.ruleset);
+  const resolvedConfig: SimConfig = { ...config, ruleset };
   const rng = new Rng(config.seed | 0);
   const total = SIZE_HEADCOUNT[config.size];
   const tilt = PHILOSOPHY_TILT[config.philosophy];
@@ -174,11 +177,11 @@ export function createOrganization(config: SimConfig): OrgState {
     nextId: projects.length,
   };
 
-  const world = seedWorld(config, rng);
+  const world = seedWorld(resolvedConfig, rng, ruleset);
 
   return {
     version: 1,
-    config,
+    config: resolvedConfig,
     day: 0,
     date: config.startDate,
     rngState: rng.state,

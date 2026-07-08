@@ -38,6 +38,8 @@ export type {
 } from "./types";
 
 export { createOrganization, clamp, effectivenessOf } from "./state";
+export { DEFAULT_RULESET, resolveRuleset } from "./ruleset";
+export type { Ruleset, DeepPartial } from "./ruleset";
 export { advance, advanceBy } from "./core/engine";
 export { Rng, nextFloat } from "./core/rng";
 export { addDays, daysBetween, tickLabel } from "./core/clock";

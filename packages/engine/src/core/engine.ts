@@ -15,7 +15,6 @@
 import type {
   DepartmentState,
   EmployeeState,
-  GrowthStrategy,
   Metrics,
   OrgEvent,
   OrgState,
@@ -28,17 +27,9 @@ import { clamp, effectivenessOf } from "../state";
 import { personName, projectName, roleFor } from "../data/names";
 import { advanceWorld, seedWorld } from "./world";
 import { directiveBias, runOrchestration } from "./orchestration";
+import { resolveRuleset } from "../ruleset";
 
 const LOG_LIMIT = 80;
-const COST_PER_HEAD = 520; // daily fully-loaded cost per employee
-const REVENUE_PER_OUTPUT = 2700; // revenue per unit of effective output at peak demand
-const ROSTER_CAP = 8; // notable people materialised per department
-
-const STRATEGY_BIAS: Record<GrowthStrategy, { demand: number; spend: number; debt: number }> = {
-  organic: { demand: 0.12, spend: 1.0, debt: 0.04 },
-  aggressive: { demand: 0.34, spend: 1.28, debt: 0.11 },
-  conservative: { demand: 0.05, spend: 0.82, debt: 0.02 },
-};
 
 type Focus = "innovation" | "efficiency" | "people" | "growth";
 
@@ -46,8 +37,9 @@ export function advance(state: OrgState): TickResult {
   if (state.status === "terminated") return { state, events: [] };
 
   const rng = new Rng(state.rngState);
+  const R = resolveRuleset(state.config.ruleset);
   const m = state.metrics;
-  const bias = STRATEGY_BIAS[state.config.growthStrategy];
+  const bias = R.strategyBias[state.config.growthStrategy];
   const events: OrgEvent[] = [];
   const day = state.day + 1;
   const date = addDays(state.date, 1);
@@ -55,14 +47,14 @@ export function advance(state: OrgState): TickResult {
   // ── Executive influence → org-wide focus pushes (each 0..1, sum ≈ 1) ──────
   const push = focusPushes(state.agents.executives);
   // the board's standing directive biases the org toward its chosen focus
-  const dbias = directiveBias(state.directive?.kind ?? "steady");
+  const dbias = directiveBias(state.directive?.kind ?? "steady", R.orchestration.directiveStrength);
   push.efficiency += dbias.efficiency ?? 0;
   push.innovation += dbias.innovation ?? 0;
   push.people += dbias.people ?? 0;
   push.growth += dbias.growth ?? 0;
 
   // ── The external world presses on the org (economy, competitors, supply) ──
-  const w = advanceWorld(state.world ?? seedWorld(state.config, rng), rng, day);
+  const w = advanceWorld(state.world ?? seedWorld(state.config, rng, R), rng, day, R);
   for (const e of w.events) {
     e.date = date;
     events.push(e);
@@ -96,17 +88,17 @@ export function advance(state: OrgState): TickResult {
       runwayPressure * 2.2 -
       clamp(workload - 1, 0, 3) * 0.8 +
       rng.range(-0.5, 0.5);
-    const morale = clamp(lerp(d.morale, moraleTarget, 0.25));
+    const morale = clamp(lerp(d.morale, moraleTarget, R.workforce.moraleInertia));
 
     const prodTarget = 40 + morale * 0.45 - m.techDebt * 0.12 + push.innovation * 12 + push.efficiency * 8;
     const productivity = clamp(lerp(d.productivity, prodTarget, 0.2));
 
     let headcount = d.headcount;
     // hiring: healthy cash + growth push → grow; low morale → attrition
-    if (runwayPressure < 0.3 && rng.chance(0.02 + push.growth * 0.05)) {
+    if (runwayPressure < 0.3 && rng.chance(R.workforce.hireChanceBase + push.growth * R.workforce.hireGrowthBonus)) {
       headcount += 1;
     }
-    if (morale < 42 && rng.chance(0.03 + (42 - morale) * 0.004)) {
+    if (morale < R.workforce.attritionMoraleThreshold && rng.chance(R.workforce.attritionChanceBase + (R.workforce.attritionMoraleThreshold - morale) * 0.004)) {
       headcount = Math.max(1, headcount - 1);
       // a notable person may walk
       const roster = empByDept.get(d.id)?.filter((e) => e.status === "active") ?? [];
@@ -149,13 +141,13 @@ export function advance(state: OrgState): TickResult {
   const brand = 0.8 + m.reputation / 250;
   const revenue = Math.max(
     0,
-    (demand / 100) * output * REVENUE_PER_OUTPUT * brand * mods.revenueMult * (1 + rng.normal() * 0.05),
+    (demand / 100) * output * R.finance.revenuePerOutput * brand * mods.revenueMult * (1 + rng.normal() * 0.05),
   );
 
   // ── Expenses: payroll (efficiency push trims spend) + overhead + compliance
   const spend = bias.spend * (1 - push.efficiency * 0.12);
-  const payroll = headcount * COST_PER_HEAD * spend;
-  const overhead = state.config.initialCapital * 0.0006;
+  const payroll = headcount * R.finance.costPerHead * spend;
+  const overhead = state.config.initialCapital * R.finance.overheadRate;
   const expenses = payroll + overhead + mods.complianceCost + rng.range(0, payroll * 0.03);
 
   const cash = m.cash + revenue - expenses;
@@ -188,13 +180,13 @@ export function advance(state: OrgState): TickResult {
     const daysActive = p.daysActive + 1;
 
     if (progress >= 100) {
-      innovationDelta += 3 + p.complexity * 0.04;
-      reputationDelta += 1.5;
-      demandBonus += 2 + p.complexity * 0.02;
-      cashBonus += p.value * 0.5;
+      innovationDelta += R.projects.shipInnovation + p.complexity * 0.04;
+      reputationDelta += R.projects.shipReputation;
+      demandBonus += R.projects.shipDemand + p.complexity * 0.02;
+      cashBonus += p.value * R.projects.shipCashFraction;
       events.push(evt(day, date, "product", "good", `Shipped: ${p.name}`, `${dept?.name ?? "A team"} delivered ${p.name}. Innovation and demand tick up.`));
       projects.push({ ...p, progress: 100, daysActive, status: "shipped" });
-    } else if (daysActive > 45 && rate < 0.35) {
+    } else if (daysActive > R.projects.stallDays && rate < R.projects.stallRateThreshold) {
       debtDelta += 1.2;
       events.push(evt(day, date, "product", "warn", `Stalled: ${p.name}`, `${p.name} has lost momentum. Tech debt and risk are accruing.`));
       projects.push({ ...p, progress, daysActive, status: "stalled" });
@@ -205,8 +197,13 @@ export function advance(state: OrgState): TickResult {
   }
 
   // spawn new work as capacity allows (bounded)
-  const cap = state.config.size === "startup" ? 4 : state.config.size === "scaleup" ? 8 : 14;
-  if (activeCount < cap && runwayPressure < 0.5 && rng.chance(0.06 + push.growth * 0.06 + push.innovation * 0.04)) {
+  const cap =
+    state.config.size === "startup"
+      ? R.projects.capStartup
+      : state.config.size === "scaleup"
+        ? R.projects.capScaleup
+        : R.projects.capEnterprise;
+  if (activeCount < cap && runwayPressure < 0.5 && rng.chance(R.projects.spawnChanceBase + push.growth * 0.06 + push.innovation * 0.04)) {
     const builders = departments.filter((d) => ["engineering", "research", "operations", "marketing"].includes(d.kind));
     const dept = (builders.length ? builders : departments)[rng.int(0, (builders.length ? builders : departments).length - 1)];
     const complexity = clamp(30 + rng.range(0, 55));
@@ -228,7 +225,7 @@ export function advance(state: OrgState): TickResult {
   if (headcount > m.headcount && rng.chance(0.25)) {
     const growing = departments[rng.int(0, departments.length - 1)];
     const rosterCount = employees.filter((e) => e.deptId === growing.id).length;
-    if (rosterCount < ROSTER_CAP) {
+    if (rosterCount < R.workforce.rosterCap) {
       employees.push({
         id: `emp-${nextId++}`,
         name: personName(rng),
@@ -251,9 +248,10 @@ export function advance(state: OrgState): TickResult {
   const reputation = clamp(m.reputation + (customerSat - m.reputation) * 0.02 + reputationDelta);
 
   const riskTarget =
-    0.4 * techDebt + 45 * runwayPressure + 0.25 * Math.max(0, 60 - moraleAvg) +
-    projects.filter((p) => p.status === "stalled").length * 3 + mods.riskAdd + rng.range(-2, 2);
-  const risk = clamp(0.6 * riskTarget + 0.4 * m.risk);
+    R.risk.techDebtWeight * techDebt + R.risk.runwayWeight * runwayPressure +
+    R.risk.moraleWeight * Math.max(0, 60 - moraleAvg) +
+    projects.filter((p) => p.status === "stalled").length * R.risk.stalledWeight + mods.riskAdd + rng.range(-2, 2);
+  const risk = clamp((1 - R.risk.smoothing) * riskTarget + R.risk.smoothing * m.risk);
 
   const growth = clamp(((revenue - expenses) / Math.max(1, expenses)) * 40, -100, 100);
 
@@ -305,6 +303,7 @@ export function advance(state: OrgState): TickResult {
     { ...state, day, date, metrics, agents: nextAgents, world: w.world },
     day,
     date,
+    R,
   );
   for (const e of orch.events) events.push(e);
 
