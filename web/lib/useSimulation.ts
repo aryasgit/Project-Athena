@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrgState, SimConfig } from "@athena/engine";
 import { engine } from "./engine-client";
+import { saveWorld } from "./world";
 
 export interface HistoryPoint {
   day: number;
@@ -42,16 +43,16 @@ function snapshot(s: OrgState): HistoryPoint {
   };
 }
 
-export function useSimulation(config: SimConfig) {
-  const [state, setState] = useState<OrgState>(() => engine.create(config));
-  const [history, setHistory] = useState<HistoryPoint[]>(() => [
-    snapshot(engine.create(config)),
-  ]);
+export function useSimulation(config: SimConfig, resume?: OrgState | null) {
+  const init = () => resume ?? engine.create(config);
+  const [state, setState] = useState<OrgState>(init);
+  const [history, setHistory] = useState<HistoryPoint[]>(() => [snapshot(init())]);
   const [speed, setSpeed] = useState<Speed>("normal");
 
   // Keep the latest state in a ref so the timer never closes over a stale world.
   const stateRef = useRef(state);
   stateRef.current = state;
+  const sinceSave = useRef(0);
 
   const step = useCallback(() => {
     const { state: next } = engine.tick(stateRef.current);
@@ -62,6 +63,11 @@ export function useSimulation(config: SimConfig) {
       out.push(snapshot(next));
       return out;
     });
+    // autosave periodically so a reload resumes roughly where you left off
+    if (++sinceSave.current >= 8) {
+      sinceSave.current = 0;
+      saveWorld(next);
+    }
     return next;
   }, []);
 
@@ -76,12 +82,28 @@ export function useSimulation(config: SimConfig) {
     return () => window.clearTimeout(id);
   }, [speed, state, step]);
 
+  // Persist the world when paused, backgrounded, or unmounted.
+  useEffect(() => {
+    if (speed === "pause") saveWorld(stateRef.current);
+  }, [speed]);
+  useEffect(() => {
+    const save = () => saveWorld(stateRef.current);
+    window.addEventListener("pagehide", save);
+    document.addEventListener("visibilitychange", save);
+    return () => {
+      save();
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", save);
+    };
+  }, []);
+
   const reset = useCallback((cfg: SimConfig) => {
     const fresh = engine.create(cfg);
     stateRef.current = fresh;
     setState(fresh);
     setHistory([snapshot(fresh)]);
     setSpeed("normal");
+    saveWorld(fresh);
   }, []);
 
   const running = speed !== "pause" && state.status === "alive";

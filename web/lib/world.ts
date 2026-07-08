@@ -10,6 +10,7 @@ import type {
   DepartmentKind,
   GrowthStrategy,
   Industry,
+  OrgState,
   Philosophy,
   RiskAppetite,
   SimConfig,
@@ -17,6 +18,7 @@ import type {
 } from "@athena/engine";
 
 export const CONFIG_KEY = "athena:config:v1";
+export const WORLD_KEY = "athena:world:v1";
 
 export const DEFAULT_CONFIG: SimConfig = {
   seed: 1337,
@@ -53,6 +55,36 @@ export function saveConfig(config: SimConfig): void {
     window.localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   } catch {
     /* storage unavailable — the world still runs, just won't persist */
+  }
+}
+
+// ── Full-world persistence (resume on reload) ───────────────────────────────
+
+export function loadWorld(): OrgState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(WORLD_KEY);
+    return raw ? (JSON.parse(raw) as OrgState) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveWorld(state: OrgState): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(WORLD_KEY, JSON.stringify(state));
+  } catch {
+    /* storage full/unavailable — the world keeps running, just won't resume */
+  }
+}
+
+export function clearWorld(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(WORLD_KEY);
+  } catch {
+    /* ignore */
   }
 }
 

@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import type { SimConfig } from "@athena/engine";
+import type { OrgState, SimConfig } from "@athena/engine";
 import { useSimulation } from "@/lib/useSimulation";
-import { loadConfig, randomSeed } from "@/lib/world";
+import { clearWorld, loadConfig, loadWorld, randomSeed } from "@/lib/world";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
 import { OrgTopology } from "@/components/OrgTopology";
@@ -14,25 +14,31 @@ import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { currency, signedPct } from "@/lib/format";
 
 export default function ObservatoryRoute() {
-  // Load the created company on the client (avoids SSR/hydration mismatch on
-  // the static export). Until it's loaded, hold a brief boot state.
-  const [config, setConfig] = useState<SimConfig | null>(null);
-  useEffect(() => setConfig(loadConfig()), []);
+  // Resolve the world on the client (avoids SSR/hydration mismatch on the static
+  // export): resume the saved world if it belongs to the current company,
+  // otherwise boot a fresh one from the created config.
+  const [boot, setBoot] = useState<{ config: SimConfig; resume: OrgState | null } | null>(null);
+  useEffect(() => {
+    const config = loadConfig();
+    const saved = loadWorld();
+    const resume = saved && saved.config.seed === config.seed && saved.config.name === config.name ? saved : null;
+    setBoot({ config, resume });
+  }, []);
 
-  if (!config) {
+  if (!boot) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <span className="label pulse">BOOTING ORGANIZATION…</span>
       </div>
     );
   }
-  return <Observatory config={config} />;
+  return <Observatory config={boot.config} resume={boot.resume} />;
 }
 
-function Observatory({ config }: { config: SimConfig }) {
+function Observatory({ config, resume }: { config: SimConfig; resume: OrgState | null }) {
   const seedRef = useRef(config.seed);
   const [view, setView] = useState<"vitals" | "topology">("vitals");
-  const sim = useSimulation(config);
+  const sim = useSimulation(config, resume);
   const { state, history } = sim;
   const m = state.metrics;
 

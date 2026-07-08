@@ -25,6 +25,7 @@ import {
   Option,
   randomSeed,
   saveConfig,
+  clearWorld,
 } from "@/lib/world";
 import { DecodeText } from "@/components/DecodeText";
 import { currency } from "@/lib/format";
@@ -74,6 +75,7 @@ export default function CreateCompany() {
   const launch = () => {
     if (!canLaunch) return;
     saveConfig(config);
+    clearWorld(); // a new company starts fresh, not resumed from the last world
     router.push("/observatory");
   };
 
