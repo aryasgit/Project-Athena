@@ -24,6 +24,27 @@ test("a fresh organization is born alive at day 0", () => {
   assert.equal(org.log.length, 1); // the founding event
 });
 
+test("an org is born populated with interacting agents", () => {
+  const org = createOrganization(CONFIG);
+  assert.ok(org.agents.executives.length >= 3, "has a leadership team");
+  assert.ok(org.agents.executives.some((x) => x.role === "CEO"));
+  assert.ok(org.agents.employees.length > 0, "has a notable roster");
+  assert.ok(org.agents.projects.length > 0, "has initial projects");
+  // headcount is the sum of its departments
+  const sum = org.agents.departments.reduce((s, d) => s + d.headcount, 0);
+  assert.equal(org.metrics.headcount, sum);
+});
+
+test("metrics emerge: agents change as the world runs", () => {
+  const start = createOrganization(CONFIG);
+  const after = advanceBy(start, 120).state;
+  // projects should have made progress or shipped over 120 days
+  const shipped = after.agents.projects.filter((p) => p.status === "shipped").length;
+  const moved = after.agents.projects.some((p) => p.progress > 0);
+  assert.ok(shipped > 0 || moved, "projects advance over time");
+  assert.notEqual(after.metrics.innovation, start.metrics.innovation);
+});
+
 test("determinism: same seed ⇒ byte-identical 365-day history", () => {
   const a = advanceBy(createOrganization(CONFIG), 365).state;
   const b = advanceBy(createOrganization(CONFIG), 365).state;

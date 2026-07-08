@@ -20,7 +20,11 @@ export type {
   DepartmentKind,
   SimConfig,
   Metrics,
+  ExecRole,
+  ExecutiveState,
   DepartmentState,
+  EmployeeState,
+  ProjectState,
   AgentPools,
   EventSeverity,
   EventKind,
@@ -29,7 +33,7 @@ export type {
   TickResult,
 } from "./types";
 
-export { createOrganization, clamp } from "./state";
+export { createOrganization, clamp, effectivenessOf } from "./state";
 export { advance, advanceBy } from "./core/engine";
 export { Rng, nextFloat } from "./core/rng";
 export { addDays, daysBetween, tickLabel } from "./core/clock";

@@ -83,18 +83,70 @@ export interface Metrics {
 }
 
 // ── Agents (own their own internal state) ───────────────────────────────────
+//
+// The headline Metrics are no longer computed by formula — they EMERGE from
+// these agents interacting each tick. Departments turn headcount + morale into
+// effectiveness; projects consume that effectiveness and, when they ship, lift
+// innovation/revenue/reputation; executives bias the whole org; notable people
+// give the workforce a face and drive hiring/attrition texture.
+
+export type ExecRole = "CEO" | "CFO" | "CTO" | "COO" | "CMO";
+
+export interface ExecutiveState {
+  id: string;
+  name: string;
+  role: ExecRole;
+  /** what this leader pushes the org toward */
+  focus: "innovation" | "efficiency" | "people" | "growth";
+  influence: number; // 0..100 — how strongly their focus biases the org
+  confidence: number; // 0..100 — moves with company performance
+}
 
 export interface DepartmentState {
   id: string;
   kind: DepartmentKind;
+  name: string;
   headcount: number;
   budget: number;
-  effectiveness: number; // 0..100
+  morale: number; // 0..100 — aggregate of its people
+  productivity: number; // 0..100 — output per head, moves with morale & debt
+  effectiveness: number; // 0..100 — headcount × productivity, the dept's "power"
+  /** ids of the notable employees materialised for this dept */
+  leadIds: string[];
 }
 
-/** Phase 1 populates employees, projects, executives, customers, market. */
+/** A discrete, bounded roster of notable people (leads, key hires). */
+export interface EmployeeState {
+  id: string;
+  name: string;
+  deptId: string;
+  role: string;
+  seniority: "junior" | "mid" | "senior" | "lead";
+  morale: number; // 0..100
+  skill: number; // 0..100
+  tenure: number; // days at the company
+  status: "active" | "left";
+}
+
+export interface ProjectState {
+  id: string;
+  name: string;
+  deptId: string;
+  progress: number; // 0..100
+  complexity: number; // 0..100 — bigger = slower, riskier, more valuable
+  value: number; // currency unlocked / recognised on ship
+  staffing: number; // heads assigned
+  status: "active" | "shipped" | "stalled";
+  daysActive: number;
+}
+
 export interface AgentPools {
+  executives: ExecutiveState[];
   departments: DepartmentState[];
+  employees: EmployeeState[];
+  projects: ProjectState[];
+  /** monotonic counter so freshly-spawned agents get stable unique ids */
+  nextId: number;
 }
 
 // ── Events (what the world narrates) ────────────────────────────────────────

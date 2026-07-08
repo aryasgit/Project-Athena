@@ -1,24 +1,36 @@
 /**
  * The deterministic core. `advance(state) -> { state, events }`.
  *
- * This is Level 1 of the architecture — the "true intelligence" of Athena.
- * It is a PURE function: no I/O, no Date.now(), no Math.random(). Given a
- * state it always produces the same next state. Randomness comes only from the
- * serialized cursor `state.rngState`, so an entire history is reproducible and
- * replayable from a seed.
+ * Level 1 of the architecture — the "true intelligence" of Athena. Pure: no I/O,
+ * no Date.now(), no Math.random(). All randomness comes from the serialized
+ * cursor `state.rngState`, so an entire history is reproducible from a seed.
  *
- * Phase 0 evolves the org's vital signs as a small coupled system so the world
- * visibly breathes and proves determinism. Phase 1 will route these transitions
- * through the agent pools (departments, employees, projects) so the same
- * headline numbers become *emergent* rather than directly computed.
+ * Phase 1: the headline Metrics are no longer computed by formula — they EMERGE.
+ * Executives bias the org; departments turn morale + headcount into effectiveness;
+ * projects consume that effectiveness and, when they ship, lift innovation,
+ * reputation, demand and cash; when they stall they breed tech debt and risk.
+ * The vitals are aggregations of all this. Same public contract as before.
  */
 
-import type { GrowthStrategy, Metrics, OrgEvent, OrgState, TickResult } from "../types";
-import { Rng } from "./rng";
-import { addDays } from "./clock";
-import { clamp } from "../state";
+import type {
+  DepartmentState,
+  EmployeeState,
+  GrowthStrategy,
+  Metrics,
+  OrgEvent,
+  OrgState,
+  ProjectState,
+  TickResult,
+} from "../types.js";
+import { Rng } from "./rng.js";
+import { addDays } from "./clock.js";
+import { clamp, effectivenessOf } from "../state.js";
+import { personName, projectName, roleFor } from "../data/names.js";
 
 const LOG_LIMIT = 80;
+const COST_PER_HEAD = 520; // daily fully-loaded cost per employee
+const REVENUE_PER_OUTPUT = 2700; // revenue per unit of effective output at peak demand
+const ROSTER_CAP = 8; // notable people materialised per department
 
 const STRATEGY_BIAS: Record<GrowthStrategy, { demand: number; spend: number; debt: number }> = {
   organic: { demand: 0.12, spend: 1.0, debt: 0.04 },
@@ -26,10 +38,7 @@ const STRATEGY_BIAS: Record<GrowthStrategy, { demand: number; spend: number; deb
   conservative: { demand: 0.05, spend: 0.82, debt: 0.02 },
 };
 
-/** Daily fully-loaded cost of one employee (rough, currency units). */
-const COST_PER_HEAD = 520;
-/** Daily revenue a fully-utilised employee generates at peak demand & brand. */
-const REVENUE_PER_HEAD = 1500;
+type Focus = "innovation" | "efficiency" | "people" | "growth";
 
 export function advance(state: OrgState): TickResult {
   if (state.status === "terminated") return { state, events: [] };
@@ -38,65 +47,204 @@ export function advance(state: OrgState): TickResult {
   const m = state.metrics;
   const bias = STRATEGY_BIAS[state.config.growthStrategy];
   const events: OrgEvent[] = [];
-
   const day = state.day + 1;
   const date = addDays(state.date, 1);
 
-  // ── Demand: bounded random walk nudged by strategy and reputation ─────────
+  // ── Executive influence → org-wide focus pushes (each 0..1, sum ≈ 1) ──────
+  const push = focusPushes(state.agents.executives);
+
+  // ── Departments evolve: morale → productivity → effectiveness, plus churn ─
+  let nextId = state.agents.nextId;
+  const employees: EmployeeState[] = state.agents.employees.map((e) => ({ ...e }));
+  const empByDept = new Map<string, EmployeeState[]>();
+  for (const e of employees) {
+    if (!empByDept.has(e.deptId)) empByDept.set(e.deptId, []);
+    empByDept.get(e.deptId)!.push(e);
+  }
+
+  const projectsByDept = new Map<string, number>();
+  for (const p of state.agents.projects) {
+    if (p.status === "active") projectsByDept.set(p.deptId, (projectsByDept.get(p.deptId) ?? 0) + 1);
+  }
+
+  // runway pressure (computed from prior tick's flows as a proxy) feeds morale
+  const priorBurn = Math.max(0, m.expenses - m.revenue);
+  const priorRunway = priorBurn > 0 ? m.cash / priorBurn : Infinity;
+  const runwayPressure = clamp(60 - Math.min(60, priorRunway), 0, 60) / 60;
+
+  const departments: DepartmentState[] = state.agents.departments.map((d) => {
+    const workload = (projectsByDept.get(d.id) ?? 0) / Math.max(1, d.headcount / 8);
+    const moraleTarget =
+      d.morale +
+      push.people * 3 -
+      runwayPressure * 2.2 -
+      clamp(workload - 1, 0, 3) * 0.8 +
+      rng.range(-0.5, 0.5);
+    const morale = clamp(lerp(d.morale, moraleTarget, 0.25));
+
+    const prodTarget = 40 + morale * 0.45 - m.techDebt * 0.12 + push.innovation * 12 + push.efficiency * 8;
+    const productivity = clamp(lerp(d.productivity, prodTarget, 0.2));
+
+    let headcount = d.headcount;
+    // hiring: healthy cash + growth push → grow; low morale → attrition
+    if (runwayPressure < 0.3 && rng.chance(0.02 + push.growth * 0.05)) {
+      headcount += 1;
+    }
+    if (morale < 42 && rng.chance(0.03 + (42 - morale) * 0.004)) {
+      headcount = Math.max(1, headcount - 1);
+      // a notable person may walk
+      const roster = empByDept.get(d.id)?.filter((e) => e.status === "active") ?? [];
+      if (roster.length && rng.chance(0.4)) {
+        const leaver = roster[rng.int(0, roster.length - 1)];
+        leaver.status = "left";
+        events.push(evt(day, date, "people", "warn", `${leaver.name} resigned`, `${leaver.role} left ${d.name}. Morale in the team is slipping.`));
+      }
+    }
+
+    return {
+      ...d,
+      headcount,
+      morale,
+      productivity,
+      effectiveness: effectivenessOf(productivity, morale),
+      leadIds: d.leadIds,
+    };
+  });
+
+  // drift each notable person's morale toward their department's
+  const deptMorale = new Map(departments.map((d) => [d.id, d.morale]));
+  for (const e of employees) {
+    if (e.status !== "active") continue;
+    e.morale = clamp(lerp(e.morale, deptMorale.get(e.deptId) ?? e.morale, 0.15) + rng.range(-0.4, 0.4));
+    e.tenure += 1;
+  }
+
+  const headcount = departments.reduce((s, d) => s + d.headcount, 0);
+  const output = departments.reduce((s, d) => s + d.headcount * (d.effectiveness / 100), 0);
+  const salesPower = deptEffectiveness(departments, ["sales", "marketing"]);
+
+  // ── Demand: random walk nudged by growth push, reputation, go-to-market ───
   const demand = clamp(
-    m.demand + rng.normal() * 1.1 + bias.demand + (m.reputation - 50) * 0.01,
+    m.demand + rng.normal() * 1.0 + bias.demand + push.growth * 0.5 +
+      (m.reputation - 50) * 0.01 + (salesPower - 50) * 0.008,
   );
 
-  // ── Revenue: workforce × demand × brand, with daily variance ──────────────
-  // Per-head revenue must be able to exceed per-head cost, or every org dies.
-  const brand = 0.8 + m.reputation / 250; // 0.8 … 1.2
-  const revenue = Math.max(
-    0,
-    (demand / 100) * m.headcount * REVENUE_PER_HEAD * brand * (1 + rng.normal() * 0.06),
-  );
+  // ── Revenue emerges from effective output × demand × brand ────────────────
+  const brand = 0.8 + m.reputation / 250;
+  const revenue = Math.max(0, (demand / 100) * output * REVENUE_PER_OUTPUT * brand * (1 + rng.normal() * 0.05));
 
-  // ── Expenses: payroll + overhead, scaled by growth spend appetite ─────────
-  const payroll = m.headcount * COST_PER_HEAD * bias.spend;
+  // ── Expenses: payroll (efficiency push trims spend) + overhead ────────────
+  const spend = bias.spend * (1 - push.efficiency * 0.12);
+  const payroll = headcount * COST_PER_HEAD * spend;
   const overhead = state.config.initialCapital * 0.0006;
-  const expenses = payroll + overhead + rng.range(0, payroll * 0.04);
+  const expenses = payroll + overhead + rng.range(0, payroll * 0.03);
 
   const cash = m.cash + revenue - expenses;
-
-  // ── Runway pressure drives morale and risk ────────────────────────────────
-  // Only a NET burn threatens survival; a profitable org has infinite runway
-  // and feels no pressure, however large its gross expenses.
   const netBurn = Math.max(0, expenses - revenue);
   const runwayDays = netBurn > 0 ? cash / netBurn : Infinity;
-  const runwayPressure = clamp(60 - Math.min(60, runwayDays), 0, 60) / 60; // 0 safe → 1 dire
 
-  const morale = clamp(
-    m.morale + (m.morale < 62 ? 0.15 : -0.05) - runwayPressure * 1.4 + rng.range(-0.4, 0.4),
-  );
+  // ── Projects: progress, ship, stall, spawn ────────────────────────────────
+  const deptById = new Map(departments.map((d) => [d.id, d]));
+  let innovationDelta = 0;
+  let reputationDelta = 0;
+  let demandBonus = 0;
+  let cashBonus = 0;
+  let debtDelta = 0;
+  let activeCount = 0;
 
-  // ── Product health: innovation vs accumulating tech debt ──────────────────
-  const innovation = clamp(m.innovation + rng.range(-0.3, 0.5) - m.techDebt * 0.004);
-  const techDebt = clamp(m.techDebt + bias.debt + rng.range(-0.05, 0.15));
+  const projects: ProjectState[] = [];
+  for (const p of state.agents.projects) {
+    if (p.status !== "active") {
+      projects.push(p);
+      continue;
+    }
+    const dept = deptById.get(p.deptId);
+    const eff = dept ? dept.effectiveness : 50;
+    const rate = clamp(
+      (eff / 100) * (p.staffing / Math.max(1, p.complexity / 20)) * (1 + push.innovation * 0.4) * rng.range(0.7, 1.3),
+      0,
+      6,
+    );
+    const progress = clamp(p.progress + rate);
+    const daysActive = p.daysActive + 1;
 
-  const customerSat = clamp(
-    m.customerSat + (innovation - 50) * 0.012 - (techDebt - 30) * 0.01 + rng.range(-0.3, 0.3),
-  );
-  const reputation = clamp(m.reputation + (customerSat - m.reputation) * 0.02);
+    if (progress >= 100) {
+      innovationDelta += 3 + p.complexity * 0.04;
+      reputationDelta += 1.5;
+      demandBonus += 2 + p.complexity * 0.02;
+      cashBonus += p.value * 0.5;
+      events.push(evt(day, date, "product", "good", `Shipped: ${p.name}`, `${dept?.name ?? "A team"} delivered ${p.name}. Innovation and demand tick up.`));
+      projects.push({ ...p, progress: 100, daysActive, status: "shipped" });
+    } else if (daysActive > 45 && rate < 0.35) {
+      debtDelta += 1.2;
+      events.push(evt(day, date, "product", "warn", `Stalled: ${p.name}`, `${p.name} has lost momentum. Tech debt and risk are accruing.`));
+      projects.push({ ...p, progress, daysActive, status: "stalled" });
+    } else {
+      projects.push({ ...p, progress, daysActive });
+      activeCount += 1;
+    }
+  }
 
-  // Risk = fragility: tech debt + runway stress + low morale. Smoothed, not
-  // accumulated, so it tracks the org's actual condition instead of saturating.
+  // spawn new work as capacity allows (bounded)
+  const cap = state.config.size === "startup" ? 4 : state.config.size === "scaleup" ? 8 : 14;
+  if (activeCount < cap && runwayPressure < 0.5 && rng.chance(0.06 + push.growth * 0.06 + push.innovation * 0.04)) {
+    const builders = departments.filter((d) => ["engineering", "research", "operations", "marketing"].includes(d.kind));
+    const dept = (builders.length ? builders : departments)[rng.int(0, (builders.length ? builders : departments).length - 1)];
+    const complexity = clamp(30 + rng.range(0, 55));
+    projects.push({
+      id: `proj-${nextId++}`,
+      name: projectName(rng),
+      deptId: dept.id,
+      progress: 0,
+      complexity,
+      value: Math.round(state.config.initialCapital * (0.05 + (complexity / 100) * 0.25)),
+      staffing: Math.max(1, Math.round(dept.headcount * rng.range(0.15, 0.4))),
+      status: "active",
+      daysActive: 0,
+    });
+    events.push(evt(day, date, "product", "info", `Kicked off: ${projects[projects.length - 1].name}`, `${dept.name} started a new initiative.`));
+  }
+
+  // occasionally materialise a notable new hire (texture; bounded per dept)
+  if (headcount > m.headcount && rng.chance(0.25)) {
+    const growing = departments[rng.int(0, departments.length - 1)];
+    const rosterCount = employees.filter((e) => e.deptId === growing.id).length;
+    if (rosterCount < ROSTER_CAP) {
+      employees.push({
+        id: `emp-${nextId++}`,
+        name: personName(rng),
+        deptId: growing.id,
+        role: roleFor(growing.kind, rng),
+        seniority: (["junior", "mid", "senior"] as const)[rng.int(0, 2)],
+        morale: clamp(growing.morale + rng.range(-4, 8)),
+        skill: clamp(55 + rng.range(-8, 20)),
+        tenure: 0,
+        status: "active",
+      });
+    }
+  }
+
+  // ── Vitals emerge from the agents ─────────────────────────────────────────
+  const moraleAvg = departments.reduce((s, d) => s + d.morale * d.headcount, 0) / Math.max(1, headcount);
+  const innovation = clamp(m.innovation + innovationDelta - m.techDebt * 0.004 + push.innovation * 0.2 - 0.15);
+  const techDebt = clamp(m.techDebt + bias.debt + debtDelta - push.efficiency * 0.15 + rng.range(-0.05, 0.1));
+  const customerSat = clamp(m.customerSat + (innovation - 50) * 0.012 - (techDebt - 30) * 0.011 + rng.range(-0.3, 0.3));
+  const reputation = clamp(m.reputation + (customerSat - m.reputation) * 0.02 + reputationDelta);
+
   const riskTarget =
-    0.4 * techDebt + 45 * runwayPressure + 0.25 * Math.max(0, 60 - morale) + rng.range(-2, 2);
+    0.4 * techDebt + 45 * runwayPressure + 0.25 * Math.max(0, 60 - moraleAvg) +
+    projects.filter((p) => p.status === "stalled").length * 3 + rng.range(-2, 2);
   const risk = clamp(0.6 * riskTarget + 0.4 * m.risk);
 
   const growth = clamp(((revenue - expenses) / Math.max(1, expenses)) * 40, -100, 100);
 
   const metrics: Metrics = {
-    cash,
+    cash: cash + cashBonus,
     revenue,
     expenses,
-    headcount: m.headcount,
-    morale,
-    demand,
+    headcount,
+    morale: clamp(moraleAvg),
+    demand: clamp(demand + demandBonus),
     innovation,
     techDebt,
     reputation,
@@ -105,27 +253,30 @@ export function advance(state: OrgState): TickResult {
     growth,
   };
 
-  // ── Narration: emit events on meaningful threshold crossings ──────────────
+  // executives' confidence tracks performance
+  const executives = state.agents.executives.map((x) => ({
+    ...x,
+    confidence: clamp(x.confidence + (growth > 0 ? 0.3 : -0.5) - runwayPressure * 1.5 + rng.range(-0.3, 0.3)),
+  }));
+
+  // ── Narration: threshold crossings + world events ─────────────────────────
   const cross = (was: number, now: number, t: number) => was >= t && now < t;
-  const prevRunway = netBurn > 0 ? m.cash / netBurn : Infinity;
-  if (cross(m.cash, cash, 0)) {
+  const prevBurn = priorBurn;
+  const prevRunway = prevBurn > 0 ? m.cash / prevBurn : Infinity;
+  if (cross(m.cash, metrics.cash, 0)) {
     events.push(evt(day, date, "finance", "critical", "Cash reserves exhausted", "The organization is insolvent. Runway has run out."));
   } else if (netBurn > 0 && prevRunway >= 30 && runwayDays < 30) {
     events.push(evt(day, date, "finance", "warn", "Runway under 30 days", `${Math.round(runwayDays)} days left at ~${Math.round(netBurn).toLocaleString()}/day net burn.`));
   }
-  if (cross(m.morale, morale, 40)) {
-    events.push(evt(day, date, "people", "warn", "Morale slipping", "Employee sentiment fell below 40. Attrition risk rising."));
+  if (cross(m.morale, metrics.morale, 40)) {
+    events.push(evt(day, date, "people", "warn", "Morale slipping", "Company-wide sentiment fell below 40. Attrition risk rising."));
   }
-  if (m.demand < 60 && demand >= 60) {
-    events.push(evt(day, date, "market", "good", "Demand surging", `Market appetite crossed 60 (now ${demand.toFixed(1)}).`));
+  if (m.demand < 60 && metrics.demand >= 60) {
+    events.push(evt(day, date, "market", "good", "Demand surging", `Market appetite crossed 60 (now ${metrics.demand.toFixed(1)}).`));
   }
-  // A periodic world event keeps the environment alive around the org.
-  if (day % 30 === 0) {
-    events.push(worldEvent(day, date, rng));
-  }
+  if (day % 30 === 0) events.push(worldEvent(day, date, rng));
 
-  // `state.status` is already narrowed to alive|paused by the guard at the top.
-  const status: OrgState["status"] = cash < -expenses * 5 ? "terminated" : state.status;
+  const status: OrgState["status"] = metrics.cash < -expenses * 5 ? "terminated" : state.status;
   if (status === "terminated") {
     events.push(evt(day, date, "system", "critical", "Simulation terminated", "The organization failed. Its history remains for study."));
   }
@@ -133,7 +284,16 @@ export function advance(state: OrgState): TickResult {
   const log = [...events, ...state.log].slice(0, LOG_LIMIT);
 
   return {
-    state: { ...state, day, date, rngState: rng.state, metrics, log, status },
+    state: {
+      ...state,
+      day,
+      date,
+      rngState: rng.state,
+      metrics,
+      agents: { executives, departments, employees, projects, nextId },
+      log,
+      status,
+    },
     events,
   };
 }
@@ -149,6 +309,25 @@ export function advanceBy(state: OrgState, ticks: number): TickResult {
     if (cur.status === "terminated") break;
   }
   return { state: cur, events: all };
+}
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+function focusPushes(execs: OrgState["agents"]["executives"]): Record<Focus, number> {
+  const out: Record<Focus, number> = { innovation: 0, efficiency: 0, people: 0, growth: 0 };
+  const total = execs.reduce((s, x) => s + x.influence, 0) || 1;
+  for (const x of execs) out[x.focus] += x.influence / total;
+  return out;
+}
+
+function deptEffectiveness(depts: DepartmentState[], kinds: string[]): number {
+  const sel = depts.filter((d) => kinds.includes(d.kind));
+  if (!sel.length) return 40;
+  return sel.reduce((s, d) => s + d.effectiveness, 0) / sel.length;
 }
 
 function evt(
