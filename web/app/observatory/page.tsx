@@ -63,6 +63,19 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
     sim.reset({ ...config, seed: seedRef.current });
   };
 
+  // Export the run's timeseries as CSV — a reproducible experiment record.
+  const exportRun = () => {
+    const cols = ["day", "cash", "revenue", "expenses", "morale", "demand", "reputation"] as const;
+    const rows = history.map((h) => cols.map((c) => Math.round(h[c])).join(","));
+    const csv = [`# ${state.config.name} · seed ${state.config.seed} · ${state.config.industry}`, cols.join(","), ...rows].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `athena-run-${state.config.seed}-day${state.day}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen">
       <SimHeader
@@ -81,9 +94,14 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
         <span className="label hidden truncate md:inline">
           DIRECTIVE · <span className="text-[var(--color-phosphor)]">{state.directive.label}</span>
         </span>
-        <span className="label hidden shrink-0 sm:inline">
-          SEED {state.config.seed} · {state.config.industry.toUpperCase()}
-        </span>
+        <div className="flex shrink-0 items-center gap-3">
+          <button className="glitch label hover:text-[var(--color-phosphor)]" onClick={exportRun} title="Export run timeseries as CSV">
+            ↧ EXPORT RUN
+          </button>
+          <span className="label hidden sm:inline">
+            SEED {state.config.seed} · {state.config.industry.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       <main className="mx-auto grid max-w-[1360px] grid-cols-1 gap-px bg-[var(--color-grid)] lg:grid-cols-[1.9fr_1fr]">

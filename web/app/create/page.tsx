@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
@@ -12,7 +12,8 @@ import type {
   SimConfig,
   CompanySize,
 } from "@athena/engine";
-import { createOrganization } from "@athena/engine";
+import { createOrganization, DEFAULT_RULESET, resolveRuleset, type Ruleset } from "@athena/engine";
+import { PARAM_FIELDS, SCENARIOS, type Scenario } from "@/lib/scenarios";
 import {
   CAPITAL_TIERS,
   DEFAULT_CONFIG,
@@ -47,6 +48,10 @@ export default function CreateCompany() {
     "research",
   ]);
   const [seed, setSeed] = useState(DEFAULT_CONFIG.seed);
+  const [ruleset, setRuleset] = useState<Ruleset>(DEFAULT_RULESET);
+  const [scenarioId, setScenarioId] = useState("baseline");
+  const [advanced, setAdvanced] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // randomise the seed on the client (never touches the engine's determinism)
   useEffect(() => setSeed(randomSeed()), []);
@@ -63,9 +68,45 @@ export default function CreateCompany() {
       riskAppetite: risk,
       departments,
       startDate: "2026-01-01",
+      ruleset,
     }),
-    [seed, name, industry, capital, philosophy, size, strategy, risk, departments],
+    [seed, name, industry, capital, philosophy, size, strategy, risk, departments, ruleset],
   );
+
+  const applyScenario = (s: Scenario) => {
+    setScenarioId(s.id);
+    setRuleset(resolveRuleset(s.ruleset));
+  };
+
+  const exportScenario = () => {
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `athena-${(name.trim() || "scenario").toLowerCase().replace(/\s+/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importScenario = (file: File) => {
+    file.text().then((txt) => {
+      try {
+        const c = JSON.parse(txt) as Partial<SimConfig>;
+        if (c.name) setName(c.name);
+        if (c.industry) setIndustry(c.industry);
+        if (c.initialCapital) setCapital(c.initialCapital);
+        if (c.philosophy) setPhilosophy(c.philosophy);
+        if (c.size) setSize(c.size);
+        if (c.growthStrategy) setStrategy(c.growthStrategy);
+        if (c.riskAppetite) setRisk(c.riskAppetite);
+        if (c.departments?.length) setDepartments(c.departments);
+        setRuleset(resolveRuleset(c.ruleset));
+        setScenarioId("imported");
+      } catch {
+        /* ignore malformed files */
+      }
+    });
+  };
 
   // a live preview of the day-0 org, so choices feel consequential
   const preview = useMemo(() => createOrganization(config), [config]);
@@ -134,6 +175,80 @@ export default function CreateCompany() {
                 ))}
               </div>
             </Field>
+
+            <Field label="Scenario · ruleset preset">
+              <div className="flex flex-wrap gap-1.5">
+                {SCENARIOS.map((s) => (
+                  <button key={s.id} className="gbtn" data-active={scenarioId === s.id} onClick={() => applyScenario(s)} title={s.description}>
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+              <p className="mono mt-2 text-[0.66rem] text-[var(--color-muted)]">
+                → {SCENARIOS.find((s) => s.id === scenarioId)?.description ?? "Custom ruleset (edited or imported)."}
+              </p>
+            </Field>
+
+            <div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button className="gbtn" data-active={advanced} onClick={() => setAdvanced((a) => !a)}>
+                  {advanced ? "▾" : "▸"} Advanced parameters
+                </button>
+                <button
+                  className="gbtn"
+                  data-active={ruleset.events.disastersEnabled}
+                  onClick={() => setRuleset((r) => ({ ...r, events: { ...r.events, disastersEnabled: !r.events.disastersEnabled } }))}
+                >
+                  Disasters {ruleset.events.disastersEnabled ? "ON" : "OFF"}
+                </button>
+                <button className="gbtn" onClick={exportScenario} title="Download this scenario as JSON">↧ Export</button>
+                <button className="gbtn" onClick={() => fileRef.current?.click()} title="Load a scenario JSON">↥ Import</button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && importScenario(e.target.files[0])}
+                />
+              </div>
+
+              {advanced && (
+                <div className="mt-4 border border-[var(--color-grid)] bg-[var(--color-panel)] p-4">
+                  {Object.entries(
+                    PARAM_FIELDS.reduce<Record<string, typeof PARAM_FIELDS>>((acc, fd) => {
+                      (acc[fd.group] ??= []).push(fd);
+                      return acc;
+                    }, {}),
+                  ).map(([group, fields]) => (
+                    <div key={group} className="mb-4 last:mb-0">
+                      <div className="label mb-2">{group}</div>
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {fields.map((fd) => (
+                          <div key={fd.label} className="flex items-center gap-2">
+                            <span className="mono w-[15ch] shrink-0 text-[0.6rem] text-[var(--color-ash-2)]">{fd.label}</span>
+                            <input
+                              type="range"
+                              min={fd.min}
+                              max={fd.max}
+                              step={fd.step}
+                              value={fd.get(ruleset)}
+                              onChange={(e) => setRuleset((r) => fd.set(r, parseFloat(e.target.value)))}
+                              className="h-1 flex-1"
+                            />
+                            <span className="mono w-[5ch] shrink-0 text-right text-[0.58rem] tabular text-[var(--color-ash)]">
+                              {trim(fd.get(ruleset))}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <p className="mono mt-2 text-[0.6rem] text-[var(--color-faint)]">
+                    // A RUN IS DEFINED BY (SEED + RULESET). EXPORT TO SAVE THE FULL EXPERIMENT; IMPORT TO REPRODUCE ONE.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -233,6 +348,10 @@ function Group<T extends string | number>({
       )}
     </Field>
   );
+}
+
+function trim(n: number): string {
+  return (Math.round(n * 1000) / 1000).toString();
 }
 
 function Stat({ k, v }: { k: string; v: string }) {

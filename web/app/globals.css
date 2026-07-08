@@ -157,6 +157,9 @@ em {
   100% { text-shadow: 0 0 transparent; transform: translate(0); }
 }
 
+/* range sliders (advanced parameters) */
+input[type="range"] { accent-color: var(--color-phosphor); cursor: pointer; }
+
 /* — Live pulse — */
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 .pulse { animation: pulse 1.3s var(--ease) infinite; }
