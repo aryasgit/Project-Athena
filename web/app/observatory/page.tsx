@@ -7,6 +7,7 @@ import { useSimulation } from "@/lib/useSimulation";
 import { loadConfig, randomSeed } from "@/lib/world";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
+import { OrgTopology } from "@/components/OrgTopology";
 import { EventFeed } from "@/components/EventFeed";
 import { Sparkline } from "@/components/Sparkline";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -30,6 +31,7 @@ export default function ObservatoryRoute() {
 
 function Observatory({ config }: { config: SimConfig }) {
   const seedRef = useRef(config.seed);
+  const [view, setView] = useState<"vitals" | "topology">("vitals");
   const sim = useSimulation(config);
   const { state, history } = sim;
   const m = state.metrics;
@@ -112,12 +114,32 @@ function Observatory({ config }: { config: SimConfig }) {
           </div>
 
           <div className="px-5 pb-8 pt-6 md:px-8">
-            <div className="label mb-3">Vital signs</div>
-            <VitalSigns metrics={m} />
-            <p className="mt-4 max-w-[74ch] text-[0.78rem] leading-relaxed text-[var(--color-muted)]">
-              No single KPI defines success. These co-evolve — cash pressures morale, tech debt
-              erodes customer satisfaction, reputation feeds demand. The Phosphor marks critical state.
-            </p>
+            <div className="mb-4 flex items-center gap-1.5">
+              <button className="gbtn" data-active={view === "vitals"} onClick={() => setView("vitals")}>
+                Vital signs
+              </button>
+              <button className="gbtn" data-active={view === "topology"} onClick={() => setView("topology")}>
+                Org topology
+              </button>
+              {view === "topology" && (
+                <span className="label ml-auto hidden sm:inline">
+                  {state.agents.departments.length} DEPTS · {state.agents.projects.filter((p) => p.status !== "shipped").length} LIVE PROJECTS
+                </span>
+              )}
+            </div>
+            {view === "vitals" ? (
+              <>
+                <VitalSigns metrics={m} />
+                <p className="mt-4 max-w-[74ch] text-[0.78rem] leading-relaxed text-[var(--color-muted)]">
+                  No single KPI defines success. These co-evolve — cash pressures morale, tech debt
+                  erodes customer satisfaction, reputation feeds demand. The Phosphor marks critical state.
+                </p>
+              </>
+            ) : (
+              <div className="border border-[var(--color-grid)] bg-[var(--color-void)]">
+                <OrgTopology agents={state.agents} />
+              </div>
+            )}
           </div>
         </section>
 
