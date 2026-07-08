@@ -20,17 +20,24 @@ The foundation and a living heartbeat.
 
 **Demo:** `npm run dev` → the organization is alive and evolving on load.
 
-## ▢ Phase 1 — The Living Core
+## ◑ Phase 1 — The Living Core (mostly done)
 
 Make the world creatable and the interior emergent.
 
-- **Create Company** flow (industry, capital, philosophy, size, strategy, risk,
-  departments) → feeds `SimConfig`.
-- **Agent pools become real:** employees, projects, executives — headline metrics
-  become *aggregations of agent behaviour*, not formulas.
-- **Org topology** view with **React Flow** (departments → teams → projects).
-- Move the engine into a **Web Worker** (`WorkerEngineClient`) for buttery motion.
-- Persist worlds to **localStorage/IndexedDB**; resume on reload.
+- ✅ **Agent pools are real:** executives, departments, projects and a notable-people
+  roster. Headline metrics are now *aggregations of agent behaviour* — projects ship
+  and lift innovation/reputation/cash, stalls breed debt/risk, people are hired and
+  resign, executives bias the org by focus.
+- ✅ **Create-Company flow** (`/create`): name, industry, capital, philosophy, size,
+  strategy, risk, departments, with a live day-0 preview and a regenerable seed.
+- ✅ **Org topology** view: CEO → leadership + departments → active projects, drawn in
+  bespoke SVG (React Flow's edge renderer wouldn't measure under React 19 here), live
+  each tick.
+- ✅ **Persistence:** worlds autosave to localStorage and resume on reload.
+- ⏸ **Web Worker engine** — *deliberately deferred.* The agent tick runs well under
+  16ms and motion is already smooth, so moving it off-thread would force the whole
+  client to an async engine boundary for no measurable gain (and risk static-export
+  friction). Per ADR 0001, we add it only when a tick actually blocks the main thread.
 
 ## ▢ Phase 2 — Orchestration & World
 
