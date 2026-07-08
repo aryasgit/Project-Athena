@@ -18,6 +18,7 @@ import type {
   SimConfig,
 } from "./types";
 import { Rng } from "./core/rng";
+import { seedWorld } from "./core/world";
 import { deptLabel, personName, projectName, roleFor, EXEC_FOCUS } from "./data/names";
 
 const SIZE_HEADCOUNT: Record<SimConfig["size"], number> = {
@@ -173,6 +174,8 @@ export function createOrganization(config: SimConfig): OrgState {
     nextId: projects.length,
   };
 
+  const world = seedWorld(config, rng);
+
   return {
     version: 1,
     config,
@@ -181,6 +184,8 @@ export function createOrganization(config: SimConfig): OrgState {
     rngState: rng.state,
     metrics,
     agents,
+    world,
+    directive: { kind: "steady", label: "Stay the course", sinceDay: 0 },
     log: [
       {
         day: 0,

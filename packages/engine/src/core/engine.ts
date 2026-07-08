@@ -26,6 +26,8 @@ import { Rng } from "./rng";
 import { addDays } from "./clock";
 import { clamp, effectivenessOf } from "../state";
 import { personName, projectName, roleFor } from "../data/names";
+import { advanceWorld, seedWorld } from "./world";
+import { directiveBias, runOrchestration } from "./orchestration";
 
 const LOG_LIMIT = 80;
 const COST_PER_HEAD = 520; // daily fully-loaded cost per employee
@@ -52,6 +54,20 @@ export function advance(state: OrgState): TickResult {
 
   // ── Executive influence → org-wide focus pushes (each 0..1, sum ≈ 1) ──────
   const push = focusPushes(state.agents.executives);
+  // the board's standing directive biases the org toward its chosen focus
+  const dbias = directiveBias(state.directive?.kind ?? "steady");
+  push.efficiency += dbias.efficiency ?? 0;
+  push.innovation += dbias.innovation ?? 0;
+  push.people += dbias.people ?? 0;
+  push.growth += dbias.growth ?? 0;
+
+  // ── The external world presses on the org (economy, competitors, supply) ──
+  const w = advanceWorld(state.world ?? seedWorld(state.config, rng), rng, day);
+  for (const e of w.events) {
+    e.date = date;
+    events.push(e);
+  }
+  const mods = w.mods;
 
   // ── Departments evolve: morale → productivity → effectiveness, plus churn ─
   let nextId = state.agents.nextId;
@@ -126,18 +142,21 @@ export function advance(state: OrgState): TickResult {
   // ── Demand: random walk nudged by growth push, reputation, go-to-market ───
   const demand = clamp(
     m.demand + rng.normal() * 1.0 + bias.demand + push.growth * 0.5 +
-      (m.reputation - 50) * 0.01 + (salesPower - 50) * 0.008,
+      (m.reputation - 50) * 0.01 + (salesPower - 50) * 0.008 + mods.demandDelta,
   );
 
-  // ── Revenue emerges from effective output × demand × brand ────────────────
+  // ── Revenue emerges from effective output × demand × brand × economy ──────
   const brand = 0.8 + m.reputation / 250;
-  const revenue = Math.max(0, (demand / 100) * output * REVENUE_PER_OUTPUT * brand * (1 + rng.normal() * 0.05));
+  const revenue = Math.max(
+    0,
+    (demand / 100) * output * REVENUE_PER_OUTPUT * brand * mods.revenueMult * (1 + rng.normal() * 0.05),
+  );
 
-  // ── Expenses: payroll (efficiency push trims spend) + overhead ────────────
+  // ── Expenses: payroll (efficiency push trims spend) + overhead + compliance
   const spend = bias.spend * (1 - push.efficiency * 0.12);
   const payroll = headcount * COST_PER_HEAD * spend;
   const overhead = state.config.initialCapital * 0.0006;
-  const expenses = payroll + overhead + rng.range(0, payroll * 0.03);
+  const expenses = payroll + overhead + mods.complianceCost + rng.range(0, payroll * 0.03);
 
   const cash = m.cash + revenue - expenses;
   const netBurn = Math.max(0, expenses - revenue);
@@ -161,7 +180,7 @@ export function advance(state: OrgState): TickResult {
     const dept = deptById.get(p.deptId);
     const eff = dept ? dept.effectiveness : 50;
     const rate = clamp(
-      (eff / 100) * (p.staffing / Math.max(1, p.complexity / 20)) * (1 + push.innovation * 0.4) * rng.range(0.7, 1.3),
+      (eff / 100) * (p.staffing / Math.max(1, p.complexity / 20)) * (1 + push.innovation * 0.4) * mods.supplyMult * rng.range(0.7, 1.3),
       0,
       6,
     );
@@ -233,7 +252,7 @@ export function advance(state: OrgState): TickResult {
 
   const riskTarget =
     0.4 * techDebt + 45 * runwayPressure + 0.25 * Math.max(0, 60 - moraleAvg) +
-    projects.filter((p) => p.status === "stalled").length * 3 + rng.range(-2, 2);
+    projects.filter((p) => p.status === "stalled").length * 3 + mods.riskAdd + rng.range(-2, 2);
   const risk = clamp(0.6 * riskTarget + 0.4 * m.risk);
 
   const growth = clamp(((revenue - expenses) / Math.max(1, expenses)) * 40, -100, 100);
@@ -274,12 +293,20 @@ export function advance(state: OrgState): TickResult {
   if (m.demand < 60 && metrics.demand >= 60) {
     events.push(evt(day, date, "market", "good", "Demand surging", `Market appetite crossed 60 (now ${metrics.demand.toFixed(1)}).`));
   }
-  if (day % 30 === 0) events.push(worldEvent(day, date, rng));
 
   const status: OrgState["status"] = metrics.cash < -expenses * 5 ? "terminated" : state.status;
   if (status === "terminated") {
     events.push(evt(day, date, "system", "critical", "Simulation terminated", "The organization failed. Its history remains for study."));
   }
+
+  // ── Level 2 orchestration: scheduled board reviews set the directive ──────
+  const nextAgents = { executives, departments, employees, projects, nextId };
+  const orch = runOrchestration(
+    { ...state, day, date, metrics, agents: nextAgents, world: w.world },
+    day,
+    date,
+  );
+  for (const e of orch.events) events.push(e);
 
   const log = [...events, ...state.log].slice(0, LOG_LIMIT);
 
@@ -290,7 +317,9 @@ export function advance(state: OrgState): TickResult {
       date,
       rngState: rng.state,
       metrics,
-      agents: { executives, departments, employees, projects, nextId },
+      agents: nextAgents,
+      world: w.world,
+      directive: orch.directive,
       log,
       status,
     },
@@ -339,17 +368,4 @@ function evt(
   detail: string,
 ): OrgEvent {
   return { day, date, kind, severity, title, detail };
-}
-
-const WORLD_EVENTS: Array<Omit<OrgEvent, "day" | "date">> = [
-  { kind: "world", severity: "warn", title: "Competitor raises funding", detail: "A rival closed a large round. Expect pricing pressure." },
-  { kind: "world", severity: "good", title: "Favourable industry tailwind", detail: "Sector sentiment improved; demand gets a lift." },
-  { kind: "world", severity: "info", title: "New regulation proposed", detail: "Regulators floated rules that may raise compliance overhead." },
-  { kind: "world", severity: "good", title: "Technology breakthrough", detail: "A platform advance opens room for product innovation." },
-  { kind: "world", severity: "warn", title: "Supply chain disruption", detail: "Upstream constraints threaten operational throughput." },
-];
-
-function worldEvent(day: number, date: string, rng: Rng): OrgEvent {
-  const base = WORLD_EVENTS[rng.int(0, WORLD_EVENTS.length - 1)];
-  return { ...base, day, date };
 }

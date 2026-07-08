@@ -149,6 +149,37 @@ export interface AgentPools {
   nextId: number;
 }
 
+// ── The external world (the environment the org lives inside) ───────────────
+//
+// The organization does not evolve in a vacuum. A living economy, competitors,
+// regulators and supply conditions press on it every tick — modulating demand,
+// costs and risk. This is Phase 2's "world" half; deterministic like everything.
+
+export interface Competitor {
+  id: string;
+  name: string;
+  strength: number; // 0..100 — market muscle
+  aggression: number; // 0..100 — how often they make a move
+}
+
+export interface WorldState {
+  economy: number; // -100..100 — boom(+) / recession(−), a slow multi-year cycle
+  economyPhase: number; // internal cursor for the cycle (radians)
+  sentiment: number; // 0..100 — sector optimism
+  regulation: number; // 0..100 — compliance burden
+  supply: number; // 0..100 — supply-chain health (100 = smooth)
+  competitors: Competitor[];
+}
+
+/** A standing directive set by the board that biases the org until superseded. */
+export type DirectiveKind = "cut-costs" | "invest-rnd" | "seize-market" | "protect-people" | "steady";
+
+export interface Directive {
+  kind: DirectiveKind;
+  label: string;
+  sinceDay: Tick;
+}
+
 // ── Events (what the world narrates) ────────────────────────────────────────
 
 export type EventSeverity = "info" | "good" | "warn" | "critical";
@@ -158,7 +189,8 @@ export type EventKind =
   | "market"
   | "people"
   | "product"
-  | "world";
+  | "world"
+  | "board";
 
 export interface OrgEvent {
   day: Tick;
@@ -181,6 +213,10 @@ export interface OrgState {
   rngState: number;
   metrics: Metrics;
   agents: AgentPools;
+  /** The external environment the org lives inside. */
+  world: WorldState;
+  /** The board's standing directive, biasing the org until superseded. */
+  directive: Directive;
   /** Rolling window of the most recent events (bounded). */
   log: OrgEvent[];
   /** Lifecycle. A world keeps existing until paused or terminated. */

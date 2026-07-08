@@ -67,3 +67,18 @@ test("the world narrates: events accumulate over a year", () => {
   const r = advanceBy(createOrganization(CONFIG), 365);
   assert.ok(r.events.length > 0, "expected the world to emit events");
 });
+
+test("the external world exists and evolves", () => {
+  const start = createOrganization(CONFIG);
+  assert.ok(start.world.competitors.length > 0, "born with competitors");
+  const after = advanceBy(start, 200).state;
+  assert.notEqual(after.world.economy, start.world.economy, "economy moves");
+  assert.ok(after.world.regulation >= start.world.regulation, "regulation only rises");
+});
+
+test("orchestration holds board reviews and can change the directive", () => {
+  const r = advanceBy(createOrganization(CONFIG), 300);
+  const boardEvents = r.events.filter((e) => e.kind === "board");
+  assert.ok(boardEvents.length > 0, "board reviews fire on a cadence");
+  assert.ok(boardEvents.some((e) => /board review/i.test(e.title)), "quarterly reviews occur");
+});

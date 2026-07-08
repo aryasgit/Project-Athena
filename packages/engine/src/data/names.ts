@@ -58,6 +58,18 @@ export function roleFor(kind: DepartmentKind, rng: Rng): string {
   return roles[rng.int(0, roles.length - 1)];
 }
 
+const COMPETITOR_PREFIX = [
+  "North", "Vertex", "Apex", "Nova", "Iron", "Blue", "Hyper", "Core", "Vanta", "Zenith",
+  "Delta", "Orbit", "Quant", "Summit", "Titan", "Cobalt", "Lumen", "Astra",
+];
+const COMPETITOR_SUFFIX = ["Labs", "Systems", "Dynamics", "Works", "Group", "Corp", "Industries", "Collective", "Partners"];
+
+export function competitorName(rng: Rng): string {
+  return `${COMPETITOR_PREFIX[rng.int(0, COMPETITOR_PREFIX.length - 1)]} ${
+    COMPETITOR_SUFFIX[rng.int(0, COMPETITOR_SUFFIX.length - 1)]
+  }`;
+}
+
 export function projectName(rng: Rng): string {
   return `${PROJECT_ADJ[rng.int(0, PROJECT_ADJ.length - 1)]} ${
     PROJECT_NOUN[rng.int(0, PROJECT_NOUN.length - 1)]
