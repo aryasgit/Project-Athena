@@ -39,11 +39,17 @@ Make the world creatable and the interior emergent.
   client to an async engine boundary for no measurable gain (and risk static-export
   friction). Per ADR 0001, we add it only when a tick actually blocks the main thread.
 
-## ▢ Phase 2 — Orchestration & World
+## ◑ Phase 2 — Orchestration & World (mostly done)
 
-- Level 2 workflow layer: scheduler, board meetings, notifications, reports.
-- Richer external world: economy, competitors, regulation, supply chains.
-- Optional **n8n** adapter (teach/design-first; never auto-built).
+- ✅ **External world:** a multi-year economic cycle, sector sentiment, rising
+  regulation, supply shocks and competitors, all evolving each tick and modulating
+  demand, revenue, costs and risk (`core/world.ts`). Surfaced in a World view.
+- ✅ **Level-2 orchestration:** a deterministic scheduler holds quarterly board
+  reviews and monthly reviews that read the org's condition and set a standing
+  **directive** (cut costs / invest in R&D / seize market / protect people), which
+  biases the org so it visibly self-corrects (`core/orchestration.ts`). No LLM.
+- ⏸ **n8n adapter** — design-first per the initiative's standing rule; not auto-built.
+  The scheduler is deliberately modular so n8n could later drive the same cadences.
 
 ## ▢ Phase 3 — Optional AI
 
