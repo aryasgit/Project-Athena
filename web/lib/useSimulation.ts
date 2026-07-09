@@ -10,25 +10,41 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { OrgState, SimConfig } from "@athena/engine";
+import type { EventKind, EventSeverity, OrgState, SimConfig } from "@athena/engine";
 import { engine } from "./engine-client";
 import { saveWorld } from "./world";
 
+/** One tick of telemetry — the full vital record, not a decorative subset. */
 export interface HistoryPoint {
   day: number;
   cash: number;
   revenue: number;
   expenses: number;
+  headcount: number;
   morale: number;
   demand: number;
+  innovation: number;
+  techDebt: number;
   reputation: number;
+  customerSat: number;
+  risk: number;
+  economy: number; // the macro cycle, so charts can overlay cause
+}
+
+/** An event pinned to the day it fired — rendered as a marker on the timeline. */
+export interface Marker {
+  day: number;
+  severity: EventSeverity;
+  kind: EventKind;
+  title: string;
 }
 
 /** ms between ticks for each speed. Lower = faster. */
 export const SPEEDS = { pause: 0, slow: 900, normal: 450, fast: 140 } as const;
 export type Speed = keyof typeof SPEEDS;
 
-const HISTORY_LIMIT = 240;
+const HISTORY_LIMIT = 3650; // ten simulated years of full-fidelity telemetry
+const MARKER_LIMIT = 600;
 
 function snapshot(s: OrgState): HistoryPoint {
   const m = s.metrics;
@@ -37,16 +53,29 @@ function snapshot(s: OrgState): HistoryPoint {
     cash: m.cash,
     revenue: m.revenue,
     expenses: m.expenses,
+    headcount: m.headcount,
     morale: m.morale,
     demand: m.demand,
+    innovation: m.innovation,
+    techDebt: m.techDebt,
     reputation: m.reputation,
+    customerSat: m.customerSat,
+    risk: m.risk,
+    economy: s.world?.economy ?? 0,
   };
+}
+
+/** Which events earn a pin on the timeline (routine kickoffs stay in the feed). */
+function isMarker(e: { severity: EventSeverity; kind: EventKind; title: string }): boolean {
+  if (e.severity !== "info") return true;
+  return e.kind === "board" && /board review/i.test(e.title);
 }
 
 export function useSimulation(config: SimConfig, resume?: OrgState | null) {
   const init = () => resume ?? engine.create(config);
   const [state, setState] = useState<OrgState>(init);
   const [history, setHistory] = useState<HistoryPoint[]>(() => [snapshot(init())]);
+  const [markers, setMarkers] = useState<Marker[]>([]);
   const [speed, setSpeed] = useState<Speed>("normal");
 
   // Keep the latest state in a ref so the timer never closes over a stale world.
@@ -55,7 +84,7 @@ export function useSimulation(config: SimConfig, resume?: OrgState | null) {
   const sinceSave = useRef(0);
 
   const step = useCallback(() => {
-    const { state: next } = engine.tick(stateRef.current);
+    const { state: next, events } = engine.tick(stateRef.current);
     stateRef.current = next;
     setState(next);
     setHistory((h) => {
@@ -63,6 +92,13 @@ export function useSimulation(config: SimConfig, resume?: OrgState | null) {
       out.push(snapshot(next));
       return out;
     });
+    const pins = events.filter(isMarker);
+    if (pins.length) {
+      setMarkers((mk) => {
+        const out = [...mk, ...pins.map((e) => ({ day: e.day, severity: e.severity, kind: e.kind, title: e.title }))];
+        return out.length > MARKER_LIMIT ? out.slice(out.length - MARKER_LIMIT) : out;
+      });
+    }
     // autosave periodically so a reload resumes roughly where you left off
     if (++sinceSave.current >= 8) {
       sinceSave.current = 0;
@@ -102,6 +138,7 @@ export function useSimulation(config: SimConfig, resume?: OrgState | null) {
     stateRef.current = fresh;
     setState(fresh);
     setHistory([snapshot(fresh)]);
+    setMarkers([]);
     setSpeed("normal");
     saveWorld(fresh);
   }, []);
@@ -109,7 +146,7 @@ export function useSimulation(config: SimConfig, resume?: OrgState | null) {
   const running = speed !== "pause" && state.status === "alive";
 
   return useMemo(
-    () => ({ state, history, speed, running, setSpeed, step, reset }),
-    [state, history, speed, running, step, reset],
+    () => ({ state, history, markers, speed, running, setSpeed, step, reset }),
+    [state, history, markers, speed, running, step, reset],
   );
 }

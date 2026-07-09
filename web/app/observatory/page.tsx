@@ -9,6 +9,7 @@ import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
 import { OrgTopology } from "@/components/OrgTopology";
 import { WorldPanel } from "@/components/WorldPanel";
+import { Timeline } from "@/components/Timeline";
 import { EventFeed } from "@/components/EventFeed";
 import { Sparkline } from "@/components/Sparkline";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -45,9 +46,9 @@ export default function ObservatoryRoute() {
 
 function Observatory({ config, resume }: { config: SimConfig; resume: OrgState | null }) {
   const seedRef = useRef(config.seed);
-  const [view, setView] = useState<"vitals" | "topology" | "world">("vitals");
+  const [view, setView] = useState<"timeline" | "vitals" | "topology" | "world">("timeline");
   const sim = useSimulation(config, resume);
-  const { state, history } = sim;
+  const { state, history, markers } = sim;
   const m = state.metrics;
 
   const cashSeries = useMemo(() => history.map((h) => h.cash), [history]);
@@ -65,7 +66,10 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
 
   // Export the run's timeseries as CSV — a reproducible experiment record.
   const exportRun = () => {
-    const cols = ["day", "cash", "revenue", "expenses", "morale", "demand", "reputation"] as const;
+    const cols = [
+      "day", "cash", "revenue", "expenses", "headcount", "morale", "demand",
+      "innovation", "techDebt", "reputation", "customerSat", "risk", "economy",
+    ] as const;
     const rows = history.map((h) => cols.map((c) => Math.round(h[c])).join(","));
     const csv = [`# ${state.config.name} · seed ${state.config.seed} · ${state.config.industry}`, cols.join(","), ...rows].join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -150,6 +154,9 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
 
           <div className="px-5 pb-8 pt-6 md:px-8">
             <div className="mb-4 flex flex-wrap items-center gap-1.5">
+              <button className="gbtn" data-active={view === "timeline"} onClick={() => setView("timeline")}>
+                Timeline
+              </button>
               <button className="gbtn" data-active={view === "vitals"} onClick={() => setView("vitals")}>
                 Vital signs
               </button>
@@ -165,6 +172,7 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
                 </span>
               )}
             </div>
+            {view === "timeline" && <Timeline history={history} markers={markers} />}
             {view === "vitals" && (
               <>
                 <VitalSigns metrics={m} />
