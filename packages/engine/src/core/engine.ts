@@ -14,6 +14,7 @@
 
 import type {
   DepartmentState,
+  Driver,
   EmployeeState,
   Metrics,
   OrgEvent,
@@ -274,19 +275,25 @@ export function advance(state: OrgState): TickResult {
 
   // ── Stochastic events & disasters perturb the org ─────────────────────────
   const roll = rollEvents({ ...state, day, date, metrics, world: w.world }, rng, day, date, R);
+  const evFx = { cash: 0, demand: 0, reputation: 0, morale: 0, customerSat: 0, techDebt: 0, innovation: 0, risk: 0 };
   for (const f of roll.fx) {
-    if (f.cash) metrics.cash += f.cash;
-    if (f.demand) metrics.demand = clamp(metrics.demand + f.demand);
-    if (f.reputation) metrics.reputation = clamp(metrics.reputation + f.reputation);
-    if (f.morale) metrics.morale = clamp(metrics.morale + f.morale);
-    if (f.customerSat) metrics.customerSat = clamp(metrics.customerSat + f.customerSat);
-    if (f.techDebt) metrics.techDebt = clamp(metrics.techDebt + f.techDebt);
-    if (f.innovation) metrics.innovation = clamp(metrics.innovation + f.innovation);
-    if (f.risk) metrics.risk = clamp(metrics.risk + f.risk);
-    if (f.loseKeyPerson) {
+    if (f.cash) { metrics.cash += f.cash; evFx.cash += f.cash; }
+    if (f.demand) { metrics.demand = clamp(metrics.demand + f.demand); evFx.demand += f.demand; }
+    if (f.reputation) { metrics.reputation = clamp(metrics.reputation + f.reputation); evFx.reputation += f.reputation; }
+    if (f.morale) { metrics.morale = clamp(metrics.morale + f.morale); evFx.morale += f.morale; }
+    if (f.customerSat) { metrics.customerSat = clamp(metrics.customerSat + f.customerSat); evFx.customerSat += f.customerSat; }
+    if (f.techDebt) { metrics.techDebt = clamp(metrics.techDebt + f.techDebt); evFx.techDebt += f.techDebt; }
+    if (f.innovation) { metrics.innovation = clamp(metrics.innovation + f.innovation); evFx.innovation += f.innovation; }
+    if (f.risk) { metrics.risk = clamp(metrics.risk + f.risk); evFx.risk += f.risk; }
+    if (f.loseKeyPersonId || f.loseKeyPerson) {
+      // an event can name its casualty; otherwise one is drawn at random
       const active = employees.filter((e) => e.status === "active");
-      if (active.length) {
-        const gone = active[rng.int(0, active.length - 1)];
+      const gone = f.loseKeyPersonId
+        ? employees.find((e) => e.id === f.loseKeyPersonId && e.status === "active")
+        : active.length
+          ? active[rng.int(0, active.length - 1)]
+          : undefined;
+      if (gone) {
         gone.status = "left";
         const dept = departments.find((d) => d.id === gone.deptId);
         if (dept) dept.headcount = Math.max(1, dept.headcount - 1);
@@ -295,6 +302,46 @@ export function advance(state: OrgState): TickResult {
     }
   }
   for (const e of roll.events) events.push(e);
+
+  // ── Attribution: the model's own terms for what moved each metric ─────────
+  const drivers: Driver[] = [];
+  const drv = (metric: Driver["metric"], source: string, amount: number) => {
+    if (Math.abs(amount) > 0.005) drivers.push({ metric, source, amount: Math.round(amount * 100) / 100 });
+  };
+  drv("cash", "Revenue", revenue);
+  drv("cash", "Payroll", -payroll);
+  drv("cash", "Overhead", -overhead);
+  drv("cash", "Compliance", -mods.complianceCost);
+  drv("cash", "Shipped value", cashBonus);
+  drv("cash", "Events", evFx.cash);
+  drv("demand", "Macro climate", mods.demandDelta);
+  drv("demand", "Strategy", bias.demand);
+  drv("demand", "Growth push", push.growth * 0.5);
+  drv("demand", "Brand pull", (m.reputation - 50) * 0.01);
+  drv("demand", "Go-to-market", (salesPower - 50) * 0.008);
+  drv("demand", "Ships", demandBonus);
+  drv("demand", "Events", evFx.demand);
+  drv("morale", "People focus", push.people * 3);
+  drv("morale", "Runway pressure", -runwayPressure * 2.2);
+  drv("morale", "Events", evFx.morale);
+  drv("innovation", "Ships", innovationDelta);
+  drv("innovation", "Debt drag", -m.techDebt * 0.004);
+  drv("innovation", "R&D focus", push.innovation * 0.2);
+  drv("innovation", "Decay", -0.15);
+  drv("innovation", "Events", evFx.innovation);
+  drv("techDebt", "Strategy pace", bias.debt);
+  drv("techDebt", "Stalled work", debtDelta);
+  drv("techDebt", "Efficiency focus", -push.efficiency * 0.15);
+  drv("techDebt", "Events", evFx.techDebt);
+  drv("risk", "Tech debt", R.risk.techDebtWeight * techDebt);
+  drv("risk", "Runway", R.risk.runwayWeight * runwayPressure);
+  drv("risk", "Low morale", R.risk.moraleWeight * Math.max(0, 60 - moraleAvg));
+  drv("risk", "Stalled work", projects.filter((p) => p.status === "stalled").length * R.risk.stalledWeight);
+  drv("risk", "World pressure", mods.riskAdd);
+  drv("risk", "Events", evFx.risk);
+  drv("reputation", "Customer pull", (customerSat - m.reputation) * 0.02);
+  drv("reputation", "Ships", reputationDelta);
+  drv("reputation", "Events", evFx.reputation);
 
   // executives' confidence tracks performance; the disheartened may step down
   const executives = state.agents.executives.map((x) => {
@@ -353,6 +400,7 @@ export function advance(state: OrgState): TickResult {
       world: w.world,
       directive: orch.directive,
       cooldowns: roll.cooldowns,
+      drivers,
       log,
       status,
     },

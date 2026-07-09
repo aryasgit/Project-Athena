@@ -223,6 +223,19 @@ export interface OrgEvent {
   detail: string;
 }
 
+// ── Causal attribution ───────────────────────────────────────────────────────
+
+/**
+ * One named contribution to a metric's movement this tick. The engine emits
+ * these as it computes the tick, so the UI can answer "why did this move?"
+ * with the actual terms of the model rather than a guess.
+ */
+export interface Driver {
+  metric: "cash" | "demand" | "morale" | "innovation" | "techDebt" | "risk" | "reputation";
+  source: string;
+  amount: number;
+}
+
 // ── The single source of truth ──────────────────────────────────────────────
 
 export interface OrgState {
@@ -241,6 +254,8 @@ export interface OrgState {
   directive: Directive;
   /** Day each registry event last fired, for cooldowns. */
   cooldowns: Record<string, number>;
+  /** What moved the metrics THIS tick — the model's own terms, for attribution. */
+  drivers: Driver[];
   /** Rolling window of the most recent events (bounded). */
   log: OrgEvent[];
   /** Lifecycle. A world keeps existing until paused or terminated. */

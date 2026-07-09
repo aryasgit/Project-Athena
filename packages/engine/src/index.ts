@@ -33,6 +33,7 @@ export type {
   EventSeverity,
   EventKind,
   OrgEvent,
+  Driver,
   OrgState,
   TickResult,
 } from "./types";

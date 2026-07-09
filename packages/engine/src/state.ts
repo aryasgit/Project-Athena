@@ -186,6 +186,7 @@ export function createOrganization(config: SimConfig): OrgState {
     world,
     directive: { kind: "steady", label: "Stay the course", sinceDay: 0 },
     cooldowns: {},
+    drivers: [],
     log: [
       {
         day: 0,
