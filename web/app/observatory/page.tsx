@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { OrgState, SimConfig } from "@athena/engine";
-import { useSimulation } from "@/lib/useSimulation";
+import { snapshot, useSimulation, type HistoryPoint } from "@/lib/useSimulation";
+import { engine } from "@/lib/engine-client";
 import { clearWorld, loadConfig, loadWorld, randomSeed } from "@/lib/world";
+import { DriversPanel } from "@/components/DriversPanel";
+import type { GhostRun } from "@/components/Timeline";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
 import { OrgTopology } from "@/components/OrgTopology";
@@ -28,6 +31,7 @@ export default function ObservatoryRoute() {
       saved.world &&
       saved.directive &&
       saved.cooldowns &&
+      saved.drivers &&
       saved.agents?.executives?.every((e) => !!e.traits) &&
       saved.config.seed === config.seed &&
       saved.config.name === config.name;
@@ -44,11 +48,65 @@ export default function ObservatoryRoute() {
   return <Observatory config={boot.config} resume={boot.resume} />;
 }
 
+/**
+ * A ghost run: the SAME company re-lived under a different seed, computed
+ * headlessly and kept in lockstep with the live run's clock. Because the engine
+ * is deterministic, the divergence between the two lines is exactly the effect
+ * of chance — the experiment the platform exists for.
+ */
+function useGhost(config: SimConfig, day: number) {
+  const [run, setRun] = useState<GhostRun | null>(null);
+  const worldRef = useRef<OrgState | null>(null);
+
+  const start = useCallback(
+    (seed: number) => {
+      let s = engine.create({ ...config, seed });
+      const hist: HistoryPoint[] = [snapshot(s)];
+      while (s.day < day && s.status !== "terminated") {
+        s = engine.tick(s).state;
+        hist.push(snapshot(s));
+      }
+      worldRef.current = s;
+      setRun({ seed, history: hist });
+    },
+    [config, day],
+  );
+
+  const toggle = useCallback(() => {
+    if (run) {
+      worldRef.current = null;
+      setRun(null);
+    } else {
+      start(randomSeed());
+    }
+  }, [run, start]);
+
+  const reroll = useCallback(() => start(randomSeed()), [start]);
+
+  // keep pace with the live clock
+  useEffect(() => {
+    const s0 = worldRef.current;
+    if (!run || !s0 || s0.day >= day || s0.status === "terminated") return;
+    let s = s0;
+    const hist = run.history.slice();
+    while (s.day < day && s.status !== "terminated") {
+      s = engine.tick(s).state;
+      hist.push(snapshot(s));
+    }
+    worldRef.current = s;
+    setRun({ seed: run.seed, history: hist });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day]);
+
+  return { run, toggle, reroll };
+}
+
 function Observatory({ config, resume }: { config: SimConfig; resume: OrgState | null }) {
   const seedRef = useRef(config.seed);
   const [view, setView] = useState<"timeline" | "vitals" | "topology" | "world">("timeline");
   const sim = useSimulation(config, resume);
   const { state, history, markers } = sim;
+  const ghost = useGhost(config, state.day);
   const m = state.metrics;
 
   const cashSeries = useMemo(() => history.map((h) => h.cash), [history]);
@@ -68,7 +126,8 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
   const exportRun = () => {
     const cols = [
       "day", "cash", "revenue", "expenses", "headcount", "morale", "demand",
-      "innovation", "techDebt", "reputation", "customerSat", "risk", "economy",
+      "innovation", "techDebt", "reputation", "customerSat", "risk",
+      "economy", "sentiment", "regulation", "supply",
     ] as const;
     const rows = history.map((h) => cols.map((c) => Math.round(h[c])).join(","));
     const csv = [`# ${state.config.name} · seed ${state.config.seed} · ${state.config.industry}`, cols.join(","), ...rows].join("\n");
@@ -171,11 +230,30 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
                   {state.agents.departments.length} DEPTS · {state.agents.projects.filter((p) => p.status !== "shipped").length} LIVE PROJECTS
                 </span>
               )}
+              {view === "timeline" && (
+                <span className="ml-auto flex items-center gap-1.5">
+                  <button
+                    className="gbtn"
+                    data-active={!!ghost.run}
+                    onClick={ghost.toggle}
+                    title="Overlay the same company re-lived under a different seed"
+                  >
+                    ⊕ Ghost run
+                  </button>
+                  {ghost.run && (
+                    <button className="gbtn" onClick={ghost.reroll} title="Re-roll the ghost's seed">
+                      ↻ {ghost.run.seed}
+                    </button>
+                  )}
+                </span>
+              )}
             </div>
-            {view === "timeline" && <Timeline history={history} markers={markers} />}
+            {view === "timeline" && <Timeline history={history} markers={markers} ghost={ghost.run} />}
             {view === "vitals" && (
               <>
-                <VitalSigns metrics={m} />
+                <VitalSigns metrics={m} history={history} />
+                <div className="label mb-3 mt-6">Drivers · why each metric is moving today</div>
+                <DriversPanel drivers={state.drivers ?? []} />
                 <p className="mt-4 max-w-[74ch] text-[0.78rem] leading-relaxed text-[var(--color-muted)]">
                   No single KPI defines success. These co-evolve — cash pressures morale, tech debt
                   erodes customer satisfaction, reputation feeds demand. The Phosphor marks critical state.
@@ -187,7 +265,7 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
                 <OrgTopology agents={state.agents} />
               </div>
             )}
-            {view === "world" && <WorldPanel world={state.world} directive={state.directive} />}
+            {view === "world" && <WorldPanel world={state.world} directive={state.directive} history={history} />}
           </div>
         </section>
 

@@ -29,6 +29,9 @@ export interface HistoryPoint {
   customerSat: number;
   risk: number;
   economy: number; // the macro cycle, so charts can overlay cause
+  sentiment: number;
+  regulation: number;
+  supply: number;
 }
 
 /** An event pinned to the day it fired — rendered as a marker on the timeline. */
@@ -46,7 +49,7 @@ export type Speed = keyof typeof SPEEDS;
 const HISTORY_LIMIT = 3650; // ten simulated years of full-fidelity telemetry
 const MARKER_LIMIT = 600;
 
-function snapshot(s: OrgState): HistoryPoint {
+export function snapshot(s: OrgState): HistoryPoint {
   const m = s.metrics;
   return {
     day: s.day,
@@ -62,6 +65,9 @@ function snapshot(s: OrgState): HistoryPoint {
     customerSat: m.customerSat,
     risk: m.risk,
     economy: s.world?.economy ?? 0,
+    sentiment: s.world?.sentiment ?? 50,
+    regulation: s.world?.regulation ?? 0,
+    supply: s.world?.supply ?? 90,
   };
 }
 

@@ -54,7 +54,21 @@ const H_LANE = 20; // marker lane
 const H_AXIS = 22;
 const LABEL_H = 18; // per-panel label row
 
-export function Timeline({ history, markers }: { history: HistoryPoint[]; markers: Marker[] }) {
+export interface GhostRun {
+  seed: number;
+  history: HistoryPoint[];
+}
+
+export function Timeline({
+  history,
+  markers,
+  ghost,
+}: {
+  history: HistoryPoint[];
+  markers: Marker[];
+  /** a reference run (same company, different seed) overlaid dashed-dim */
+  ghost?: GhostRun | null;
+}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(900);
   const [hover, setHover] = useState<number | null>(null); // hovered day
@@ -87,8 +101,9 @@ export function Timeline({ history, markers }: { history: HistoryPoint[]; marker
     if (history.length < 2) return null;
     const x = scaleLinear().domain([first.day, Math.max(last.day, first.day + 30)]).range([PAD_L, width - PAD_R]);
 
-    const cashMin = Math.min(0, ...history.map((d) => d.cash));
-    const cashMax = Math.max(1, ...history.map((d) => d.cash));
+    const g = ghost?.history ?? [];
+    const cashMin = Math.min(0, ...history.map((d) => d.cash), ...g.map((d) => d.cash));
+    const cashMax = Math.max(1, ...history.map((d) => d.cash), ...g.map((d) => d.cash));
     const yCash = scaleLinear().domain([cashMin, cashMax]).nice(3).range([yTre + H_TREASURY, yTre]);
 
     const floMax = Math.max(1, ...history.map((d) => Math.max(d.revenue, d.expenses)));
@@ -118,7 +133,18 @@ export function Timeline({ history, markers }: { history: HistoryPoint[]; marker
       d: mkLine((p) => p[v.key] as number, yV),
     }));
 
+    // ghost overlays share the same scales, so divergence reads honestly
+    const mkGhostLine = (get: (d: HistoryPoint) => number, sy: ScaleLinear<number, number>) =>
+      g.length > 1 ? line<HistoryPoint>().x((p) => x(p.day)).y((p) => sy(get(p))).curve(curveLinear)(g) ?? "" : "";
+    const ghostCash = mkGhostLine((p) => p.cash, yCash);
+    const ghostVitals = VITALS.filter((v) => enabled.has(v.key as string)).map((v) => ({
+      key: v.key,
+      d: mkGhostLine((p) => p[v.key] as number, yV),
+    }));
+
     return {
+      ghostCash,
+      ghostVitals,
       x,
       yCash,
       yFlow,
@@ -242,6 +268,17 @@ export function Timeline({ history, markers }: { history: HistoryPoint[]; marker
           />
         ))}
 
+        {/* ghost run (reference world, dashed-dim) */}
+        {ghost && geo.ghostCash && (
+          <path d={geo.ghostCash} fill="none" stroke="var(--color-ash-2)" strokeWidth="1" strokeDasharray="4 4" opacity="0.45" />
+        )}
+        {ghost &&
+          geo.ghostVitals.map((v) =>
+            v.d ? (
+              <path key={`gh-${v.key as string}`} d={v.d} fill="none" stroke="var(--color-ash-2)" strokeWidth="0.8" strokeDasharray="3 4" opacity="0.35" />
+            ) : null,
+          )}
+
         {/* treasury */}
         <path d={geo.cashArea} fill="var(--color-ash)" opacity="0.07" />
         <path d={geo.cashLine} fill="none" stroke="var(--color-ash)" strokeWidth="1.4" />
@@ -311,6 +348,7 @@ export function Timeline({ history, markers }: { history: HistoryPoint[]; marker
 
       <p className="mono mt-2 text-[0.6rem] text-[var(--color-faint)]">
         // FULL-RUN TELEMETRY · EVENTS PINNED TO THE DAY THEY FIRED · HOVER FOR THE CROSSHAIR READOUT · DASHED CUTS = CRITICAL EVENTS
+        {ghost ? ` · GHOST = SAME COMPANY UNDER SEED ${ghost.seed} (DASHED-DIM)` : ""}
       </p>
     </div>
   );
