@@ -24,6 +24,7 @@
   /* — The Phosphor: the single accent — */
   --color-phosphor: #ff003c;     /* electric crimson */
   --color-phosphor-2: #ff3860;   /* lifted */
+  --color-good: #35d07f;         /* signal green — used only to mark good events */
 
   /* — Legacy token aliases (kept so components render monotone) — */
   --color-paper: var(--color-void);
