@@ -13,7 +13,8 @@ import type {
   CompanySize,
 } from "@athena/engine";
 import { createOrganization, DEFAULT_RULESET, resolveRuleset, type Ruleset } from "@athena/engine";
-import { PARAM_FIELDS, SCENARIOS, type Scenario } from "@/lib/scenarios";
+import { GROUP_HELP, PARAM_FIELDS, SCENARIOS, type Scenario } from "@/lib/scenarios";
+import { Slider } from "@/components/Slider";
 import {
   CAPITAL_TIERS,
   DEFAULT_CONFIG,
@@ -213,39 +214,41 @@ export default function CreateCompany() {
               </div>
 
               {advanced && (
-                <div className="mt-4 border border-[var(--color-grid)] bg-[var(--color-panel)] p-4">
+                <div className="mt-4 border border-[var(--color-grid)] bg-[var(--color-panel)] p-4 md:p-5">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-grid)] pb-4">
+                    <p className="mono max-w-[58ch] text-[0.64rem] leading-relaxed text-[var(--color-muted)]">
+                      // A RUN = SEED + RULESET. EVERY KNOB BELOW IS A MODEL ASSUMPTION. HOVER A VALUE TO RESET IT;
+                      EXPORT TO SAVE THE EXPERIMENT, IMPORT TO REPRODUCE ONE.
+                    </p>
+                    <button className="gbtn" onClick={() => setRuleset(DEFAULT_RULESET)}>↺ Reset all</button>
+                  </div>
                   {Object.entries(
                     PARAM_FIELDS.reduce<Record<string, typeof PARAM_FIELDS>>((acc, fd) => {
                       (acc[fd.group] ??= []).push(fd);
                       return acc;
                     }, {}),
                   ).map(([group, fields]) => (
-                    <div key={group} className="mb-4 last:mb-0">
-                      <div className="label mb-2">{group}</div>
-                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    <div key={group} className="mb-7 last:mb-0">
+                      <div className="label">{group}</div>
+                      <p className="mono mb-2 mt-1 text-[0.64rem] leading-snug text-[var(--color-muted)]">{GROUP_HELP[group]}</p>
+                      <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
                         {fields.map((fd) => (
-                          <div key={fd.label} className="flex items-center gap-2">
-                            <span className="mono w-[15ch] shrink-0 text-[0.6rem] text-[var(--color-ash-2)]">{fd.label}</span>
-                            <input
-                              type="range"
-                              min={fd.min}
-                              max={fd.max}
-                              step={fd.step}
-                              value={fd.get(ruleset)}
-                              onChange={(e) => setRuleset((r) => fd.set(r, parseFloat(e.target.value)))}
-                              className="h-1 flex-1"
-                            />
-                            <span className="mono w-[5ch] shrink-0 text-right text-[0.58rem] tabular text-[var(--color-ash)]">
-                              {trim(fd.get(ruleset))}
-                            </span>
-                          </div>
+                          <Slider
+                            key={fd.label}
+                            label={fd.label}
+                            help={fd.help}
+                            unit={fd.unit}
+                            value={fd.get(ruleset)}
+                            def={fd.get(DEFAULT_RULESET)}
+                            min={fd.min}
+                            max={fd.max}
+                            step={fd.step}
+                            onChange={(v) => setRuleset((r) => fd.set(r, v))}
+                          />
                         ))}
                       </div>
                     </div>
                   ))}
-                  <p className="mono mt-2 text-[0.6rem] text-[var(--color-faint)]">
-                    // A RUN IS DEFINED BY (SEED + RULESET). EXPORT TO SAVE THE FULL EXPERIMENT; IMPORT TO REPRODUCE ONE.
-                  </p>
                 </div>
               )}
             </div>
@@ -348,10 +351,6 @@ function Group<T extends string | number>({
       )}
     </Field>
   );
-}
-
-function trim(n: number): string {
-  return (Math.round(n * 1000) / 1000).toString();
 }
 
 function Stat({ k, v }: { k: string; v: string }) {
