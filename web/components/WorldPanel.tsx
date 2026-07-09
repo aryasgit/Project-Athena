@@ -1,16 +1,27 @@
 "use client";
 
 import type { Directive, WorldState } from "@athena/engine";
+import type { HistoryPoint } from "@/lib/useSimulation";
+import { Sparkline } from "./Sparkline";
 
 /**
  * The external world the organization lives inside: the economic cycle,
  * sector sentiment, regulation, supply health, and the competitors pressing on
- * it — plus the board's standing directive. Monotone HUD; The Phosphor marks
- * adverse conditions (recession, heavy regulation, disrupted supply, strong rivals).
+ * it — plus the board's standing directive. Each condition carries its recent
+ * trend. Monotone HUD; The Phosphor marks adverse conditions.
  */
-export function WorldPanel({ world, directive }: { world: WorldState; directive: Directive }) {
+export function WorldPanel({
+  world,
+  directive,
+  history,
+}: {
+  world: WorldState;
+  directive: Directive;
+  history?: HistoryPoint[];
+}) {
   const recession = world.economy < -15;
   const climate = world.economy > 15 ? "BOOM" : world.economy < -15 ? "RECESSION" : "STABLE";
+  const window_ = history && history.length > 2 ? history.slice(-180) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,13 +53,23 @@ export function WorldPanel({ world, directive }: { world: WorldState; directive:
             }}
           />
         </div>
+        {window_ && (
+          <div className="pointer-events-none mt-2 h-10 opacity-70">
+            <Sparkline
+              points={window_.map((h) => h.economy)}
+              color={recession ? "var(--color-phosphor)" : "var(--color-ash-2)"}
+              width={420}
+              height={40}
+            />
+          </div>
+        )}
       </div>
 
       {/* environment stats */}
       <div className="grid grid-cols-3 gap-px bg-[var(--color-grid)]">
-        <Stat label="Sentiment" value={world.sentiment} />
-        <Stat label="Regulation" value={world.regulation} danger={world.regulation > 60} suffix="burden" />
-        <Stat label="Supply" value={world.supply} danger={world.supply < 60} />
+        <Stat label="Sentiment" value={world.sentiment} trend={window_?.map((h) => h.sentiment)} />
+        <Stat label="Regulation" value={world.regulation} danger={world.regulation > 60} suffix="burden" trend={window_?.map((h) => h.regulation)} />
+        <Stat label="Supply" value={world.supply} danger={world.supply < 60} trend={window_?.map((h) => h.supply)} />
       </div>
 
       {/* competitors */}
@@ -65,7 +86,16 @@ export function WorldPanel({ world, directive }: { world: WorldState; directive:
                 <div className="h-[2px] flex-1 bg-[var(--color-grid-2)]">
                   <div className="h-full" style={{ width: `${c.strength}%`, background: strong ? "var(--color-phosphor)" : "var(--color-ash-2)" }} />
                 </div>
-                <span className="mono w-[3ch] shrink-0 text-right text-[0.62rem] text-[var(--color-muted)]">{c.strength.toFixed(0)}</span>
+                <span className="mono w-[3ch] shrink-0 text-right text-[0.62rem] tabular text-[var(--color-muted)]" title="Market strength">
+                  {c.strength.toFixed(0)}
+                </span>
+                <span
+                  className="mono w-[7ch] shrink-0 text-right text-[0.55rem] uppercase tracking-wider"
+                  style={{ color: c.aggression > 55 ? "var(--color-phosphor)" : "var(--color-faint)" }}
+                  title={`Aggression ${c.aggression.toFixed(0)} — how often they make offensive moves`}
+                >
+                  {c.aggression > 55 ? "HOSTILE" : "DORMANT"}
+                </span>
               </div>
             );
           })}
@@ -75,7 +105,19 @@ export function WorldPanel({ world, directive }: { world: WorldState; directive:
   );
 }
 
-function Stat({ label, value, danger, suffix }: { label: string; value: number; danger?: boolean; suffix?: string }) {
+function Stat({
+  label,
+  value,
+  danger,
+  suffix,
+  trend,
+}: {
+  label: string;
+  value: number;
+  danger?: boolean;
+  suffix?: string;
+  trend?: number[];
+}) {
   return (
     <div className="bg-[var(--color-panel)] px-4 py-3">
       <div className="label mb-1.5">{label}</div>
@@ -86,6 +128,11 @@ function Stat({ label, value, danger, suffix }: { label: string; value: number; 
       <div className="mt-2 h-[2px] w-full bg-[var(--color-grid-2)]">
         <div className="h-full" style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: danger ? "var(--color-phosphor)" : "var(--color-ash-2)" }} />
       </div>
+      {trend && trend.length > 2 && (
+        <div className="pointer-events-none mt-2 h-6 opacity-60">
+          <Sparkline points={trend} color={danger ? "var(--color-phosphor)" : "var(--color-ash-2)"} width={140} height={24} />
+        </div>
+      )}
     </div>
   );
 }

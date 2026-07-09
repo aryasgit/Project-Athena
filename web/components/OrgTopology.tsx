@@ -12,8 +12,8 @@ import type { AgentPools } from "@athena/engine";
  */
 
 const EXEC = { w: 168, h: 92 };
-const DEPT = { w: 180, h: 112 };
-const PROJ = { w: 150, h: 58 };
+const DEPT = { w: 180, h: 128 };
+const PROJ = { w: 150, h: 66 };
 const PAD = 40;
 
 type Placed = { id: string; x: number; y: number; w: number; h: number; kind: "exec" | "dept" | "project"; data: any };
@@ -52,7 +52,7 @@ export function OrgTopology({ agents }: { agents: AgentPools }) {
       const k = perDept.get(p.deptId) ?? 0;
       perDept.set(p.deptId, k + 1);
       const bx = (deptX.get(p.deptId) ?? PAD) + (DEPT.w - PROJ.w) / 2 + (k % 2) * 28 - 14;
-      placed.push({ id: p.id, x: bx, y: PAD + 210 + 150 + k * 86, w: PROJ.w, h: PROJ.h, kind: "project", data: p });
+      placed.push({ id: p.id, x: bx, y: PAD + 210 + 168 + k * 94, w: PROJ.w, h: PROJ.h, kind: "project", data: p });
       links.push({ from: p.deptId, to: p.id, crit: p.status === "stalled" });
     }
 
@@ -140,6 +140,7 @@ function DeptCard({ d }: { d: any }) {
         <span className="mono text-[0.6rem] text-[var(--color-muted)]">{d.headcount}p</span>
       </div>
       <MiniBar label="MORALE" value={d.morale} crit={crit} />
+      <MiniBar label="PROD" value={d.productivity} />
       <MiniBar label="EFFECT" value={d.effectiveness} />
       {d.shipped > 0 && <div className="mono mt-1 text-[0.55rem] uppercase tracking-wider text-[var(--color-muted)]">▲ {d.shipped} shipped</div>}
     </div>
@@ -154,7 +155,10 @@ function ProjectCard({ d }: { d: any }) {
       <div className="mt-1 h-[2px] w-full bg-[var(--color-grid-2)]">
         <div className="h-full transition-[width] duration-500" style={{ width: `${d.progress}%`, background: stalled ? "var(--color-phosphor)" : "var(--color-ash-2)" }} />
       </div>
-      <div className="mono mt-0.5 text-[0.5rem] uppercase tracking-wider text-[var(--color-faint)]">{stalled ? "STALLED" : `${Math.round(d.progress)}%`}</div>
+      <div className="mono mt-0.5 flex justify-between text-[0.5rem] uppercase tracking-wider text-[var(--color-faint)]">
+        <span>{stalled ? "STALLED" : `${Math.round(d.progress)}%`}</span>
+        <span>×{d.staffing} · ${Math.round(d.value / 1000)}K</span>
+      </div>
     </div>
   );
 }
