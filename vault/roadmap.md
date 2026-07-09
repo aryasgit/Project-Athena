@@ -66,6 +66,22 @@ Elevated from a coherent toy to a research instrument.
 - **Research framing**: scenario library + Advanced parameter editor + scenario
   file import/export in `/create`; run timeseries CSV export in the Observatory.
 
+## ✅ Instrumentation pass (de-gamification)
+
+- **Telemetry timeline** — four synchronized panels (treasury / flows / vitals /
+  macro), full 16-field per-tick history, event markers pinned to their day,
+  critical events cutting through all panels, crosshair readout.
+- **Event library** (`core/events.ts`) — ~45 concrete events across people,
+  product, market, finance, world and disaster domains, generated against live
+  state (named poachings, named rival moves) with specific attribute effects.
+- **Causal attribution** — the engine emits per-tick `drivers` (its own terms:
+  revenue, payroll, macro climate, debt drag, runway pressure, events…);
+  the Vitals view renders them as signed contribution bars.
+- **Ghost runs** — the same company re-lived under another seed, overlaid on the
+  timeline in lockstep with the live clock; divergence = the effect of chance.
+- **Denser instruments** — trend sparklines in every vital cell and world stat,
+  competitor aggression flags, productivity/staffing/value on the topology.
+
 ## ▢ Phase 3 — Optional AI
 
 - `Advisor` interface with swappable providers: rule-based ▸ Ollama ▸ cloud LLM.
