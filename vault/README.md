@@ -22,6 +22,7 @@ thousands of interconnected decisions accumulate over time?**
 
 | Doc | What it answers |
 |---|---|
+| [HANDOFF.md](HANDOFF.md) | **Start here** — current-state overview, tech stack, all capabilities. |
 | [00-topology.md](00-topology.md) | The whole system on one screen (ASCII map). |
 | [01-architecture.md](01-architecture.md) | The three-layer law, the monorepo, and how it deploys. |
 | [02-engine-design.md](02-engine-design.md) | How the deterministic core actually works. |
