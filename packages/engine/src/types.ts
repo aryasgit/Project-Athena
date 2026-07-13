@@ -202,6 +202,53 @@ export interface Directive {
   sinceDay: Tick;
 }
 
+// ── Decision intelligence: interventions, policies, decisions ────────────────
+//
+// The user does not just observe — they DECIDE. An intervention is an editable
+// lever applied to the world; some take immediate effect, some install a
+// standing policy the tick reads every day. Because interventions are pure
+// state transforms (no RNG), the same world can be forked, run down two
+// branches (do-nothing vs intervene) and compared honestly.
+
+export type InterventionKind =
+  | "rnd-budget"
+  | "marketing-push"
+  | "raise-prices"
+  | "cut-prices"
+  | "hire"
+  | "layoff"
+  | "freeze-hiring"
+  | "resume-hiring"
+  | "pay-down-debt"
+  | "acquire"
+  | "set-directive";
+
+export interface Intervention {
+  kind: InterventionKind;
+  /** generic magnitude — heads, price %, budget share, debt paid, depending on kind */
+  amount?: number;
+  deptId?: string;
+  competitorId?: string;
+  directive?: DirectiveKind;
+}
+
+/** Standing policies installed by interventions; the tick reads these every day. */
+export interface Policies {
+  priceIndex: number; // 1 = list price; >1 raises prices (revenue up, demand down)
+  hiringFrozen: boolean;
+  rndBudget: number; // 0..1 — extra R&D push, at a daily cash cost
+  marketing: number; // 0..1 — extra demand, at a daily cash cost
+}
+
+/** A recorded decision — the spine of the decision journal. */
+export interface DecisionRecord {
+  day: Tick;
+  date: string;
+  kind: InterventionKind;
+  label: string;
+  note: string;
+}
+
 // ── Events (what the world narrates) ────────────────────────────────────────
 
 export type EventSeverity = "info" | "good" | "warn" | "critical";
@@ -252,6 +299,10 @@ export interface OrgState {
   world: WorldState;
   /** The board's standing directive, biasing the org until superseded. */
   directive: Directive;
+  /** Standing policies installed by user interventions. */
+  policies: Policies;
+  /** The decision journal — every committed intervention. */
+  decisions: DecisionRecord[];
   /** Day each registry event last fired, for cooldowns. */
   cooldowns: Record<string, number>;
   /** What moved the metrics THIS tick — the model's own terms, for attribution. */

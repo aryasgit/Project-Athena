@@ -30,6 +30,10 @@ export type {
   WorldState,
   Directive,
   DirectiveKind,
+  InterventionKind,
+  Intervention,
+  Policies,
+  DecisionRecord,
   EventSeverity,
   EventKind,
   OrgEvent,
@@ -42,5 +46,7 @@ export { createOrganization, clamp, effectivenessOf } from "./state";
 export { DEFAULT_RULESET, resolveRuleset } from "./ruleset";
 export type { Ruleset, DeepPartial } from "./ruleset";
 export { advance, advanceBy } from "./core/engine";
+export { applyIntervention, interventionLabel, INTERVENTIONS } from "./core/intervene";
+export type { InterventionDef } from "./core/intervene";
 export { Rng, nextFloat } from "./core/rng";
 export { addDays, daysBetween, tickLabel } from "./core/clock";

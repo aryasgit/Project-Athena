@@ -43,6 +43,7 @@ export function advance(state: OrgState): TickResult {
   const R = resolveRuleset(state.config.ruleset);
   const m = state.metrics;
   const bias = R.strategyBias[state.config.growthStrategy];
+  const P = state.policies ?? { priceIndex: 1, hiringFrozen: false, rndBudget: 0, marketing: 0 };
   const events: OrgEvent[] = [];
   const day = state.day + 1;
   const date = addDays(state.date, 1);
@@ -55,6 +56,8 @@ export function advance(state: OrgState): TickResult {
   push.innovation += dbias.innovation ?? 0;
   push.people += dbias.people ?? 0;
   push.growth += dbias.growth ?? 0;
+  // user policy: funded R&D adds an innovation push
+  push.innovation += P.rndBudget * 0.5;
 
   // ── The external world presses on the org (economy, competitors, supply) ──
   const w = advanceWorld(state.world ?? seedWorld(state.config, rng, R), rng, day, R);
@@ -98,7 +101,7 @@ export function advance(state: OrgState): TickResult {
 
     let headcount = d.headcount;
     // hiring: healthy cash + growth push → grow; low morale → attrition
-    if (runwayPressure < 0.3 && rng.chance(R.workforce.hireChanceBase + push.growth * R.workforce.hireGrowthBonus)) {
+    if (!P.hiringFrozen && runwayPressure < 0.3 && rng.chance(R.workforce.hireChanceBase + push.growth * R.workforce.hireGrowthBonus)) {
       headcount += 1;
     }
     if (morale < R.workforce.attritionMoraleThreshold && rng.chance(R.workforce.attritionChanceBase + (R.workforce.attritionMoraleThreshold - morale) * 0.004)) {
@@ -137,21 +140,23 @@ export function advance(state: OrgState): TickResult {
   // ── Demand: random walk nudged by growth push, reputation, go-to-market ───
   const demand = clamp(
     m.demand + rng.normal() * 1.0 + bias.demand + push.growth * 0.5 +
-      (m.reputation - 50) * 0.01 + (salesPower - 50) * 0.008 + mods.demandDelta,
+      (m.reputation - 50) * 0.01 + (salesPower - 50) * 0.008 + mods.demandDelta -
+      (P.priceIndex - 1) * 6 + P.marketing * 4,
   );
 
-  // ── Revenue emerges from effective output × demand × brand × economy ──────
+  // ── Revenue emerges from effective output × demand × brand × economy × price
   const brand = 0.8 + m.reputation / 250;
   const revenue = Math.max(
     0,
-    (demand / 100) * output * R.finance.revenuePerOutput * brand * mods.revenueMult * (1 + rng.normal() * 0.05),
+    (demand / 100) * output * R.finance.revenuePerOutput * brand * mods.revenueMult * P.priceIndex * (1 + rng.normal() * 0.05),
   );
 
-  // ── Expenses: payroll (efficiency push trims spend) + overhead + compliance
+  // ── Expenses: payroll + overhead + compliance + funded policies ───────────
   const spend = bias.spend * (1 - push.efficiency * 0.12);
   const payroll = headcount * R.finance.costPerHead * spend;
   const overhead = state.config.initialCapital * R.finance.overheadRate;
-  const expenses = payroll + overhead + mods.complianceCost + rng.range(0, payroll * 0.03);
+  const policyCost = (P.marketing * 0.9 + P.rndBudget * 0.7) * headcount * R.finance.costPerHead;
+  const expenses = payroll + overhead + mods.complianceCost + policyCost + rng.range(0, payroll * 0.03);
 
   const cash = m.cash + revenue - expenses;
   const netBurn = Math.max(0, expenses - revenue);

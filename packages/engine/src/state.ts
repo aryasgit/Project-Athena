@@ -185,6 +185,8 @@ export function createOrganization(config: SimConfig): OrgState {
     agents,
     world,
     directive: { kind: "steady", label: "Stay the course", sinceDay: 0 },
+    policies: { priceIndex: 1, hiringFrozen: false, rndBudget: 0, marketing: 0 },
+    decisions: [],
     cooldowns: {},
     drivers: [],
     log: [
