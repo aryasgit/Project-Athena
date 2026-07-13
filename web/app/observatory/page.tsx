@@ -7,6 +7,7 @@ import { snapshot, useSimulation, type HistoryPoint } from "@/lib/useSimulation"
 import { engine } from "@/lib/engine-client";
 import { clearWorld, loadConfig, loadWorld, randomSeed } from "@/lib/world";
 import { DriversPanel } from "@/components/DriversPanel";
+import { IntervenePanel } from "@/components/IntervenePanel";
 import type { GhostRun } from "@/components/Timeline";
 import { SimHeader } from "@/components/SimHeader";
 import { VitalSigns } from "@/components/VitalSigns";
@@ -32,6 +33,7 @@ export default function ObservatoryRoute() {
       saved.directive &&
       saved.cooldowns &&
       saved.drivers &&
+      saved.policies &&
       saved.agents?.executives?.every((e) => !!e.traits) &&
       saved.config.seed === config.seed &&
       saved.config.name === config.name;
@@ -104,9 +106,15 @@ function useGhost(config: SimConfig, day: number) {
 function Observatory({ config, resume }: { config: SimConfig; resume: OrgState | null }) {
   const seedRef = useRef(config.seed);
   const [view, setView] = useState<"timeline" | "vitals" | "topology" | "world">("timeline");
+  const [intervening, setIntervening] = useState(false);
   const sim = useSimulation(config, resume);
   const { state, history, markers } = sim;
   const ghost = useGhost(config, state.day);
+
+  const openIntervene = () => {
+    sim.setSpeed("pause");
+    setIntervening(true);
+  };
   const m = state.metrics;
 
   const cashSeries = useMemo(() => history.map((h) => h.cash), [history]);
@@ -151,9 +159,17 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
       />
 
       <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 px-5 py-2 md:px-8">
-        <Link href="/create" className="glitch label shrink-0 hover:text-[var(--color-phosphor)]">
-          ← NEW COMPANY
-        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          <Link href="/create" className="glitch label hover:text-[var(--color-phosphor)]">
+            ← NEW COMPANY
+          </Link>
+          <button className="gbtn glitch" data-active onClick={openIntervene} title="Model a decision before committing to it">
+            ▶ INTERVENE
+          </button>
+          {state.decisions.length > 0 && (
+            <span className="label hidden lg:inline">{state.decisions.length} DECISIONS</span>
+          )}
+        </div>
         <span className="label hidden truncate md:inline">
           DIRECTIVE · <span className="text-[var(--color-phosphor)]">{state.directive.label}</span>
         </span>
@@ -279,6 +295,17 @@ function Observatory({ config, resume }: { config: SimConfig; resume: OrgState |
           </div>
         </aside>
       </main>
+
+      {intervening && (
+        <IntervenePanel
+          state={state}
+          onCommit={(iv) => {
+            sim.intervene(iv);
+            setIntervening(false);
+          }}
+          onClose={() => setIntervening(false)}
+        />
+      )}
     </div>
   );
 }

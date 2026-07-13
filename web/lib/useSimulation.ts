@@ -10,7 +10,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { EventKind, EventSeverity, OrgState, SimConfig } from "@athena/engine";
+import type { EventKind, EventSeverity, Intervention, OrgState, SimConfig } from "@athena/engine";
+import { applyIntervention, interventionLabel } from "@athena/engine";
 import { engine } from "./engine-client";
 import { saveWorld } from "./world";
 
@@ -149,10 +150,19 @@ export function useSimulation(config: SimConfig, resume?: OrgState | null) {
     saveWorld(fresh);
   }, []);
 
+  // Commit an intervention to the LIVE world — the decision becomes reality.
+  const intervene = useCallback((iv: Intervention) => {
+    const next = applyIntervention(stateRef.current, iv);
+    stateRef.current = next;
+    setState(next);
+    setMarkers((mk) => [...mk, { day: next.day, severity: "info", kind: "board", title: `Decision: ${interventionLabel(iv)}` }]);
+    saveWorld(next);
+  }, []);
+
   const running = speed !== "pause" && state.status === "alive";
 
   return useMemo(
-    () => ({ state, history, markers, speed, running, setSpeed, step, reset }),
-    [state, history, markers, speed, running, step, reset],
+    () => ({ state, history, markers, speed, running, setSpeed, step, reset, intervene }),
+    [state, history, markers, speed, running, step, reset, intervene],
   );
 }

@@ -11,7 +11,7 @@
  * policies (raising prices installs a price index the tick reads every day).
  */
 
-import type { DirectiveKind, Intervention, InterventionKind, OrgState, Policies } from "../types";
+import type { DirectiveKind, Intervention, InterventionKind, OrgEvent, OrgState, Policies } from "../types";
 import { clamp } from "../state";
 
 const DIRECTIVE_LABEL: Record<DirectiveKind, string> = {
@@ -158,7 +158,7 @@ export function applyIntervention(state: OrgState, iv: Intervention): OrgState {
       { day: state.day, date: state.date, kind: iv.kind, label: interventionLabel(iv), note },
     ],
     log: [
-      { day: state.day, date: state.date, kind: "board", severity: "info", title: `Decision: ${interventionLabel(iv)}`, detail: note },
+      { day: state.day, date: state.date, kind: "board", severity: "info", title: `Decision: ${interventionLabel(iv)}`, detail: note } as OrgEvent,
       ...state.log,
     ].slice(0, 80),
   };
